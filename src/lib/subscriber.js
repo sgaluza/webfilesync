@@ -7,4 +7,12 @@ var Subscriber = function(name, address, key, folderName, rootPath){
 
 }
 
+Subscriber.prototype.gotFile = function(relativePath, size){
+
+}
+
+Subscriber.prototype.gotFileChunk = function(relativePath, offset, chunkBin){
+
+}
+
 module.exports = Subscriber;

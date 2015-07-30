@@ -4,7 +4,9 @@ var fs = require('fs')
     , _ = require('lodash')
     , q = require('q')
     , chokidar = require('chokidar')
-    , util = require('util');
+    , util = require('util')
+    , dbpath = 'db/pub/'
+    ;
 
 var Publisher = function(name, rootPath, port, key, log){
     var self = this;
@@ -27,7 +29,7 @@ var Publisher = function(name, rootPath, port, key, log){
 
 Publisher.prototype._init = function(){
     var self = this;
-    this._db = new Datastore({filename: 'db/'+this._name, autoload: true});
+    this._db = new Datastore({filename: dbpath + this._name, autoload: true});
     return this._db.qCount({})
         .then(function(count){
             self._revision = count;
@@ -88,7 +90,7 @@ Publisher.prototype.showDb = function(){
 Publisher.prototype.dropDb = function(){
     var self = this;
     console.log(this._name + " Drop Database");
-    fs.unlinkSync('db/' + this._name);
+    fs.unlinkSync(dbpath + this._name);
     this._init().then(function(){
         return self._syncFolderWithDB();
     });
