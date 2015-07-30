@@ -6,24 +6,32 @@ var fs = require('fs')
     , chokidar = require('chokidar')
     , util = require('util');
 
-var Publisher = function(name, path, port, key, log){
+var Publisher = function(name, rootPath, port, key, log){
+    var self = this;
     this._name = name;
     this._key = key;
-    this._path = path;
-    this._port = port;
+    this._path = rootPath;
     this._log = log;
-
-    q.all(this._init());
+    this._init()
+        .then(function(){
+            chokidar.watch(self._path, {persistent: true}).on('all', function(e, p){
+                var relativePath = path.relative(self._path, p);
+                if(e == 'add'){
+                    return self._addFile(relativePath);
+                }
+                return q();
+            })
+        });
 }
 
 Publisher.prototype._init = function(){
     var self = this;
     this._db = new Datastore({filename: 'db/'+this._name, autoload: true});
-    this._db.qCount({})
+    return this._db.qCount({})
         .then(function(count){
             self._revision = count;
             console.log('revision ' + count);
-            return self._syncFolderWithDB();
+            return q();
         });
 
 }
@@ -43,23 +51,26 @@ Publisher.prototype._syncFolderWithDB = function(){
                 checkFiles(relativePath);
             }
             else{
-                promises.push(self._db.qFind({path: relativePath})
-                    .then(function(docs){
-                        if(docs.length === 0){
-                            return self._addFile(relativePath);
-                        }
-                        return q();
-                    }));
+                promises.push(self._addFile(relativePath));
             }
         }).value();
     }
-    checkFiles('/')
+    checkFiles('')
     return q.all(promises);
 }
 
 Publisher.prototype._addFile = function(relativePath){
-    console.log('Added file: ' + relativePath + '. current rev: ' + this._revision);
-    return this._db.qInsert({_id: ++this._revision, path: relativePath, added: new Date()})
+    if(relativePath[0] !== '/') relativePath = '/' + relativePath;
+
+    var self = this;
+    return this._db.qFind({path: relativePath})
+        .then(function(docs){
+            if(docs.length === 0){
+                console.log('Added file: ' + relativePath + '. current rev: ' + self._revision);
+                return self._db.qInsert({_id: ++self._revision, path: relativePath, added: new Date()})
+            }
+            return q();
+        });
 }
 
 
@@ -77,7 +88,9 @@ Publisher.prototype.dropDb = function(){
     var self = this;
     console.log(this._name + " Drop Database");
     fs.unlinkSync('db/' + this._name);
-    this._init();
+    this._init().then(function(){
+        return self._syncFolderWithDB();
+    });
 }
 
 module.exports = Publisher;

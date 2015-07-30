@@ -30,3 +30,41 @@ process.stdin.on('readable', function() {
         }
     }
 });
+
+var WebSocketServer = require('ws').Server
+    , wss = new WebSocketServer({ port: port });
+console.log('started server on port: ' + port);
+wss.on('connection', function(ws){
+    var authorized = false;
+    var source = null;
+    ws.on('message', function(message){
+        console.log('message: ' + message);
+        message = JSON.parse(message);
+
+
+
+        if(message.type == 'auth'){
+            if(message.key == key){
+                console.log('authorized client');
+                authorized = true;
+            }
+            else{
+                console.log('wrong key from client');
+                ws.close('wrong key');
+            }
+        }
+    })
+});
+
+_(config.get('subscribe')).forEach(function(s){
+    console.log('subscribing to: ' + s.address);
+    var WebSocket = require('ws');
+    var ws = new WebSocket(s.address);
+    ws.on('open', function(){
+        console.log('opened connection');
+        ws.send(JSON.stringify({
+            type: 'auth',
+            key: s.key
+        }))
+    })
+}).value();

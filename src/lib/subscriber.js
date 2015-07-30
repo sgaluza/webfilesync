@@ -1,9 +1,9 @@
-var Subscriber = function(name, address, key, folderName, path){
-    this.name = name;
-    this.address = address;
-    this.key = key;
-    this.folderName = folderName;
-    this.path = path;
+var Subscriber = function(name, address, key, folderName, rootPath){
+    this._name = name;
+    this._address = address;
+    this._key = key;
+    this._folderName = folderName;
+    this._path = rootPath;
 
 }
 
