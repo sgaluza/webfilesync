@@ -36,20 +36,32 @@ var WebSocketServer = require('ws').Server
 console.log('started server on port: ' + port);
 wss.on('connection', function(ws){
     var authorized = false;
-    var source = null;
+    var sources = null;
+    var pubs = null;
     ws.on('message', function(message){
-        console.log('message: ' + message);
+        console.log('S: message: ' + message);
         message = JSON.parse(message);
-
-
 
         if(message.type == 'auth'){
             if(message.key == key){
-                console.log('authorized client');
+                console.log('S: authorized client');
                 authorized = true;
+                sources = message.sources;
+                pubs = _(publishers).filter(function(p){
+                    return _(sources).find(function(s){ return p.name == s.name });
+                }).forEach(function(p){
+                    p.sub(function(op, file, revision){
+                        ws.send(JSON.stringify({
+                            type: 'rev',
+                            value: revision,
+                            source: p.name,
+                            file: file
+                        }))
+                    })
+                }).value();
             }
             else{
-                console.log('wrong key from client');
+                console.log('S: wrong key from client');
                 ws.close('wrong key');
             }
         }
@@ -57,14 +69,17 @@ wss.on('connection', function(ws){
 });
 
 _(config.get('subscribe')).forEach(function(s){
-    console.log('subscribing to: ' + s.address);
+    console.log('C: subscribing to: ' + s.address);
     var WebSocket = require('ws');
     var ws = new WebSocket(s.address);
     ws.on('open', function(){
-        console.log('opened connection');
         ws.send(JSON.stringify({
             type: 'auth',
-            key: s.key
+            key: s.key,
+            sources: _(s.folders).pluck('name').value()
         }))
+    });
+    ws.on('message', function(message){
+        console.log('C: message: ' + message);
     })
 }).value();

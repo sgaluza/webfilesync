@@ -12,6 +12,7 @@ var Publisher = function(name, rootPath, port, key, log){
     this._key = key;
     this._path = rootPath;
     this._log = log;
+    this._callbacks = [];
     this._init()
         .then(function(){
             chokidar.watch(self._path, {persistent: true}).on('all', function(e, p){
@@ -30,7 +31,6 @@ Publisher.prototype._init = function(){
     return this._db.qCount({})
         .then(function(count){
             self._revision = count;
-            console.log('revision ' + count);
             return q();
         });
 
@@ -66,8 +66,9 @@ Publisher.prototype._addFile = function(relativePath){
     return this._db.qFind({path: relativePath})
         .then(function(docs){
             if(docs.length === 0){
-                console.log('Added file: ' + relativePath + '. current rev: ' + self._revision);
-                return self._db.qInsert({_id: ++self._revision, path: relativePath, added: new Date()})
+                console.log('Added file: ' + relativePath + '. current rev: ' + (++self._revision));
+                self.publish('add', relativePath);
+                return self._db.qInsert({_id: self._revision, path: relativePath, op: 'add', date: new Date()})
             }
             return q();
         });
@@ -91,6 +92,17 @@ Publisher.prototype.dropDb = function(){
     this._init().then(function(){
         return self._syncFolderWithDB();
     });
+}
+
+Publisher.prototype.sub = function(cb){
+    this._callbacks.push(cb);
+}
+
+Publisher.prototype.publish = function(op, file){
+    var self = this;
+    _(this._callbacks).forEach(function(cb){
+        cb(op, file, self._revision);
+    }).value();
 }
 
 module.exports = Publisher;

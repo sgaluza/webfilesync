@@ -13,10 +13,16 @@ var conf = convict({
         name: "main",
         address: "http://127.0.0.1:8080",
         key: "change-to-your-key",
-        folders: [{
-            name: "source",
-            path: "../dest/"
-        }]
+        folders: [
+            {
+                name: "source",
+                path: "../dest/"
+            },
+            {
+                name: "source1",
+                path: "../dest/"
+            }
+        ]
     }]
 });
 
