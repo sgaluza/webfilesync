@@ -1,7 +1,10 @@
 var fs = require('fs')
     , path = require('path')
-    , Datastore = require('nedb')
-    , _ = require('lodash');
+    , Datastore = require('./nedb-promises')
+    , _ = require('lodash')
+    , q = require('q')
+    , chokidar = require('chokidar')
+    , util = require('util');
 
 var Publisher = function(name, path, port, key, log){
     this._name = name;
@@ -10,21 +13,25 @@ var Publisher = function(name, path, port, key, log){
     this._port = port;
     this._log = log;
 
-    this._init();
+    q.all(this._init());
 }
 
 Publisher.prototype._init = function(){
     var self = this;
     this._db = new Datastore({filename: 'db/'+this._name, autoload: true});
-    this._db.count({}, function(err, count){
-        self._revision = count;
-    })
-    this._syncFolderWithDB();
+    this._db.qCount({})
+        .then(function(count){
+            self._revision = count;
+            console.log('revision ' + count);
+            return self._syncFolderWithDB();
+        });
 
 }
 
 Publisher.prototype._syncFolderWithDB = function(){
     var self = this;
+    var promises = [];
+
     var checkFiles = function(p){
         var files = fs.readdirSync(path.normalize(self._path + '/' + p));
         _(files).forEach(function(f){
@@ -36,26 +43,34 @@ Publisher.prototype._syncFolderWithDB = function(){
                 checkFiles(relativePath);
             }
             else{
-                self._db.find({path: relativePath}, function(err, docs){
-                    if(docs.length === 0){
-                        self._db.insert({_id: ++self._revision, path: relativePath, added: new Date()})
-                    }
-                });
+                promises.push(self._db.qFind({path: relativePath})
+                    .then(function(docs){
+                        if(docs.length === 0){
+                            return self._addFile(relativePath);
+                        }
+                        return q();
+                    }));
             }
         }).value();
     }
+    checkFiles('/')
+    return q.all(promises);
+}
 
-    checkFiles('/');
+Publisher.prototype._addFile = function(relativePath){
+    console.log('Added file: ' + relativePath + '. current rev: ' + this._revision);
+    return this._db.qInsert({_id: ++this._revision, path: relativePath, added: new Date()})
 }
 
 
 Publisher.prototype.showDb = function(){
     console.log(this._name + " Database content: ");
-    this._db.find({}).sort({name: 1}).exec(function(err, files){
-        _(files).forEach(function(f){
-            console.log(f);
-        }).value();
-    });
+    this._db.qExec(this._db.find({}).sort({name: 1}))
+        .then(function(files){
+            _(files).forEach(function(f){
+                console.log(f);
+            }).value();
+        })
 }
 
 Publisher.prototype.dropDb = function(){
