@@ -44,6 +44,8 @@ Subscriber.prototype._checkUpdates = function(){
                     response.pipe(file);
                     response.on('error', function(err){
                         console.log('error:' + err);
+                        self._updates.unshift(up);
+                        self._working = false;
                     })
                     response.on('end', function(){
                         self._db.qInsert(up).then(function(){
