@@ -102,44 +102,46 @@ if(publishers) {
 
 
 
-var subscribers = config.get('subscribe');
-_.keys(subscribers).forEach(function(skey){
-    var s = subscribers[skey];
+var subscribers = config.has('subscribe') ?  config.get('subscribe') : null;
+if(subscribers){
+    _.keys(subscribers).forEach(function(skey){
+        var s = subscribers[skey];
 
-    var initSub = function(s) {
-        s.sub = new Subscriber(skey, s.path, s.address, s.folders);
-        var WebSocket = require('ws');
-        var ws = new WebSocket(s.address);
-        ws.on('open', function () {
-            console.log('C: subscribing to: ' + s.address);
-            s.sub.getRevision().then(function (rev) {
-                console.log('send revision: ' + rev._id)
-                ws.send(JSON.stringify({
-                    type: 'auth',
-                    key: s.key,
-                    sources: _.keys(s.folders),
-                    rev: rev._id
-                }))
+        var initSub = function(s) {
+            s.sub = new Subscriber(skey, s.path, s.address, s.folders);
+            var WebSocket = require('ws');
+            var ws = new WebSocket(s.address);
+            ws.on('open', function () {
+                console.log('C: subscribing to: ' + s.address);
+                s.sub.getRevision().then(function (rev) {
+                    console.log('send revision: ' + rev._id)
+                    ws.send(JSON.stringify({
+                        type: 'auth',
+                        key: s.key,
+                        sources: _.keys(s.folders),
+                        rev: rev._id
+                    }))
+                })
+
+            });
+            ws.on('error', function (message) {
+                ws.terminate();
+                initSub(s);
+
             })
+            ws.on('message', function (message) {
+                var m = JSON.parse(message);
+                if (!Array.isArray(m))
+                    m = [m];
 
-        });
-        ws.on('error', function (message) {
-            ws.terminate();
-            initSub(s);
+                _(m).forEach(function (m) {
+                    s.sub.update(m);
+                }).value();
 
-        })
-        ws.on('message', function (message) {
-            var m = JSON.parse(message);
-            if (!Array.isArray(m))
-                m = [m];
+            })
+        }
 
-            _(m).forEach(function (m) {
-                s.sub.update(m);
-            }).value();
-
-        })
-    }
-
-    initSub(s);
-});
+        initSub(s);
+    });
+}
 
