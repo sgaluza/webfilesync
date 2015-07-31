@@ -9,10 +9,10 @@ var http = require('http')
 
 var Subscriber = function(name, address, folders){
     this._name = name;
-    this._folders = folders;
     _(folders).forEach(function(f){
         f.path = f.path.replace(/\\/ig, '/');
     }).value();
+    this._folders = folders;
     this._updates = [];
     this._address = address;
     this._working = false;
