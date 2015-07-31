@@ -62,7 +62,7 @@ Subscriber.prototype._checkUpdates = function(){
 Subscriber.prototype.getRevision = function(){
     return this._db.qExec(this._db.find({}).sort({_id: -1}).limit(1))
         .then(function(res){
-            return res.length > 0 ? res[0] : 0;
+            return res.length > 0 ? res[0]._id : 0;
         })
 }
 

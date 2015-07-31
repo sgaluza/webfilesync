@@ -114,12 +114,13 @@ if(subscribers){
             ws.on('open', function () {
                 console.log('C: subscribing to: ' + s.address);
                 s.sub.getRevision().then(function (rev) {
-                    console.log('send revision: ' + rev._id)
+
+                    console.log('send revision: ' + rev)
                     ws.send(JSON.stringify({
                         type: 'auth',
                         key: s.key,
                         sources: _.keys(s.folders),
-                        rev: rev._id
+                        rev: rev
                     }))
                 })
 
