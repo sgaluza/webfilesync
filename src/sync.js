@@ -108,7 +108,7 @@ if(subscribers){
         var s = subscribers[skey];
 
         var initSub = function(s) {
-            s.sub = new Subscriber(skey, s.path, s.address, s.folders);
+            s.sub = new Subscriber(skey, s.address, s.folders);
             var WebSocket = require('ws');
             var ws = new WebSocket(s.address);
             ws.on('open', function () {
