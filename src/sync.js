@@ -48,9 +48,10 @@ var staticServer = http.createServer(function(request, response){
             var pub = publishers[m[1]];
             if(pub){
                 var hash = m[2];
-                var filePath = pub.getRecordByHash(hash)
+                var filePath = pub.pub.getRecordByHash(hash)
                     .then(function(doc) {
-                        if(doc){
+                        if(doc.length == 1){
+                            doc = doc[0]
                             request.url = doc.path;
                             pub.file.serve( request, response );
                         }
@@ -79,12 +80,10 @@ var staticServer = http.createServer(function(request, response){
                     pubs = _.keys(publishers).filter(function(p){
                         return _(sources).find(function(s){ return p == s.name });
                     }).forEach(function(p){
-                        publishers[p].pub.sub(function(op, file, revision){
+                        publishers[p].pub.sub(function(doc){
                             ws.send(JSON.stringify({
-                                type: 'rev',
-                                value: revision,
-                                source: p.name,
-                                file: file
+                                type: 'op',
+                                doc: doc
                             }))
                         })
                     });

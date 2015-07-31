@@ -70,8 +70,16 @@ Publisher.prototype._addFile = function(relativePath){
         .then(function(docs){
             if(docs.length === 0){
                 console.log('Added file: ' + relativePath + '. current rev: ' + (++self._revision));
-                self.publish('add', relativePath);
-                return self._db.qInsert({_id: self._revision, path: relativePath, op: 'add', date: new Date()})
+                var hash = crypto.createHash('sha256')
+                    .update(relativePath)
+                    .update(new Date().toString())
+                    .digest("hex");
+                var doc = {_id: self._revision, path: relativePath, op: 'add', date: new Date(), hash: hash};
+                self._db.qInsert(doc)
+                    .then(function(){
+                        self.publish(doc);
+                        return q();
+                    })
             }
             return q();
         });
@@ -89,7 +97,7 @@ Publisher.prototype.showDb = function(){
 }
 
 Publisher.prototype.getRecordByHash = function(hash){
-    this._db.qExec(this._db.find({hash: hash}).sort({rev: -1}).take(1));
+    return this._db.qExec(this._db.find({hash: hash}).sort({rev: -1}).limit(1));
 }
 
 Publisher.prototype.dropDb = function(){
@@ -105,10 +113,10 @@ Publisher.prototype.sub = function(cb){
     this._callbacks.push(cb);
 }
 
-Publisher.prototype.publish = function(op, file){
+Publisher.prototype.publish = function(op, doc){
     var self = this;
     _(this._callbacks).forEach(function(cb){
-        cb(op, file, self._revision);
+        cb(doc);
     }).value();
 }
 
