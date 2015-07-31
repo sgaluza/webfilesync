@@ -6,7 +6,7 @@ var fs = require('fs')
     , chokidar = require('chokidar')
     , util = require('util')
     , dbpath = 'db/pub/'
-    ;
+    , crypto = require('crypto');
 
 var Publisher = function(name, rootPath, port, key, log){
     var self = this;
@@ -62,6 +62,7 @@ Publisher.prototype._syncFolderWithDB = function(){
 }
 
 Publisher.prototype._addFile = function(relativePath){
+    relativePath = relativePath.replace(/\\/gi, '/');
     if(relativePath[0] !== '/') relativePath = '/' + relativePath;
 
     var self = this;
@@ -85,6 +86,10 @@ Publisher.prototype.showDb = function(){
                 console.log(f);
             }).value();
         })
+}
+
+Publisher.prototype.getRecordByHash = function(hash){
+    this._db.qExec(this._db.find({hash: hash}).sort({rev: -1}).take(1));
 }
 
 Publisher.prototype.dropDb = function(){
