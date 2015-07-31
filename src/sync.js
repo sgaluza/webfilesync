@@ -3,9 +3,8 @@ var log = require('./lib/log')
     , Publisher = require('./lib/publisher')
     , Subscriber = require('./lib/subscriber')
     , _ = require('lodash')
-    , static = require( 'node-static' )
-    , http = require('http')
-    , url = require('url');
+    , static = require('node-static')
+    , http = require('http');
 
 
 var port = config.get('port');
@@ -14,7 +13,7 @@ var key = config.get('key');
 var publishers = config.get('publish');
 
 _.keys(publishers).forEach(function(p){
-    publishers[p].pub = new Publisher(p, publishers[p].path, port, key, log);
+    publishers[p].pub = new Publisher(p, publishers[p].path, port, log);
     publishers[p].file = new static.Server( publishers[p].path, {
         cache: 3600,
         gzip: true
@@ -63,8 +62,8 @@ var staticServer = http.createServer(function(request, response){
 
     var WebSocketServer = require('ws').Server
         , wss = new WebSocketServer({ server: staticServer });
-    console.log('started server on port: ' + port);
     wss.on('connection', function(ws){
+        console.log('started server on port: ' + port);
         var authorized = false;
         var sources = null;
         var pubs = null;
@@ -76,14 +75,17 @@ var staticServer = http.createServer(function(request, response){
                 if(message.key == key){
                     console.log('S: authorized client: ' + message.sources);
                     authorized = true;
-
                     pubs = _.keys(publishers).filter(function(p){
                         return _(message.sources).find(function(s){return p == s });
                     }).forEach(function(p){
-                        publishers[p].pub.getDelta(0).then(function(data){
+                        publishers[p].pub.getDelta(message.rev).then(function(data){
+                            _(data).forEach(function(d){
+                                d.source = p;
+                            }).value();
                             ws.send(JSON.stringify(data));
                         })
                         publishers[p].pub.sub(function(doc){
+                            doc.source = doc;
                             ws.send(JSON.stringify(doc));
                         })
                     });
@@ -98,20 +100,34 @@ var staticServer = http.createServer(function(request, response){
 
 });
 
-_(config.get('subscribe')).forEach(function(s){
-    console.log('C: subscribing to: ' + s.address);
+var subscribers = config.get('subscribe');
+_.keys(subscribers).forEach(function(skey){
+    var s = subscribers[skey];
+    s.sub = new Subscriber(skey, s.path, s.address, s.folders);
     var WebSocket = require('ws');
     var ws = new WebSocket(s.address);
     ws.on('open', function(){
-        ws.send(JSON.stringify({
-            type: 'auth',
-            key: s.key,
-            sources: _(s.folders).pluck('name').value(),
-            rev: 0
-        }))
+        console.log('C: subscribing to: ' + s.address);
+        s.sub.getRevision().then(function(rev){
+            console.log('send revision: '+ rev._id)
+            ws.send(JSON.stringify({
+                type: 'auth',
+                key: s.key,
+                sources: _.keys(s.folders),
+                rev: rev._id
+            }))
+        })
+
     });
     ws.on('message', function(message){
-        console.log('C: message: ' + message);
+        var m = JSON.parse(message);
+        if(!Array.isArray(m))
+            m = [m];
+
+        _(m).forEach(function(m){
+            s.sub.update(m);
+        }).value();
+
     })
-}).value();
+});
 

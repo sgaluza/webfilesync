@@ -4,14 +4,12 @@ var fs = require('fs')
     , _ = require('lodash')
     , q = require('q')
     , chokidar = require('chokidar')
-    , util = require('util')
     , dbpath = 'db/pub/'
     , crypto = require('crypto');
 
-var Publisher = function(name, rootPath, port, key, log){
+var Publisher = function(name, rootPath, port, log){
     var self = this;
     this._name = name;
-    this._key = key;
     this._path = rootPath;
     this._log = log;
     this._callbacks = [];
