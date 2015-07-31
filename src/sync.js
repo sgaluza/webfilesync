@@ -17,13 +17,14 @@ _(config.get('publish')).forEach(function(p){
 process.stdin.on('readable', function() {
     var chunk = process.stdin.read();
     if (chunk != null) {
-        if(chunk == 'db\n') {
+        chunk = chunk.toString().replace('/\S/', '');
+        if(chunk == 'db') {
             console.log('showing dbs:');
             _(publishers).forEach(function (p) {
                 p.showDb();
             }).value();
         }
-        else if(chunk == 'drop\n'){
+        else if(chunk == 'drop'){
             _(publishers).forEach(function (p) {
                 p.dropDb();
             }).value();

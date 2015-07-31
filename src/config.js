@@ -6,7 +6,7 @@ var conf = convict({
     publish:[
         {
             name: "source",
-            path: "/Users/sgaluza/reps/webfilesync/src/lib"
+            path: "./lib"
         }
     ],
     subscribe: [{
