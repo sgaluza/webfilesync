@@ -115,7 +115,7 @@ Publisher.prototype.sub = function(cb){
     this._callbacks.push(cb);
 }
 
-Publisher.prototype.publish = function(op, doc){
+Publisher.prototype.publish = function(doc){
     var self = this;
     _(this._callbacks).forEach(function(cb){
         cb(doc);

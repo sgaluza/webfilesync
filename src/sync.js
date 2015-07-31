@@ -85,7 +85,7 @@ var staticServer = http.createServer(function(request, response){
                             ws.send(JSON.stringify(data));
                         })
                         publishers[p].pub.sub(function(doc){
-                            doc.source = doc;
+                            doc.source = p;
                             ws.send(JSON.stringify(doc));
                         })
                     });
