@@ -3,7 +3,7 @@ var log = require('./lib/log')
     , Publisher = require('./lib/publisher')
     , Subscriber = require('./lib/subscriber')
     , _ = require('lodash')
-    , static = require('node-static')
+    , send = require('send')
     , http = require('http');
 
 process.stdin.on('readable', function() {
@@ -33,30 +33,24 @@ var publishers = config.has('publish') ? config.get('publish') : null;
 if(publishers) {
     _.keys(publishers).forEach(function (p) {
         publishers[p].pub = new Publisher(p, publishers[p].path, port, log);
-        publishers[p].file = new static.Server(publishers[p].path, {
-            cache: 3600,
-            gzip: true
-        });
     });
 
     var staticServer = http.createServer(function(request, response){
-        request.addListener('end', function(){
-            var m = /^\/(\S+)\/(\S+)$/ig.exec(request.url);
-            if(m){
-                var pub = publishers[m[1]];
-                if(pub){
-                    var hash = m[2];
-                    var filePath = pub.pub.getRecordByHash(hash)
-                        .then(function(doc) {
-                            if(doc.length == 1){
-                                doc = doc[0]
-                                request.url = doc.path;
-                                pub.file.serve( request, response );
-                            }
-                        });
-                }
+        var m = /^\/(\S+)\/(\S+)$/ig.exec(request.url);
+        if(m){
+            var pub = publishers[m[1]];
+            if(pub){
+                var hash = m[2];
+                var filePath = pub.pub.getRecordByHash(hash)
+                    .then(function(doc) {
+                        if(doc.length == 1){
+                            doc = doc[0]
+                            request.url = doc.path;
+                            send(request, request.url).pipe(response)
+                        }
+                    });
             }
-        }).resume();
+        }
     }).listen(port, function(){
 
         var WebSocketServer = require('ws').Server
