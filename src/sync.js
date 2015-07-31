@@ -46,7 +46,7 @@ if(publishers) {
                         if(doc.length == 1){
                             doc = doc[0]
                             request.url = doc.path;
-                            send(request, request.url).pipe(response)
+                            send(request, request.url, {root: pub.path}).pipe(response)
                         }
                     });
             }
