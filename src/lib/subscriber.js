@@ -12,7 +12,7 @@ var Subscriber = function(name, address, folders){
     this._folders = folders;
     _(folders).forEach(function(f){
         f.path = f.path.replace(/\\/ig, '/');
-    })
+    }).value();
     this._updates = [];
     this._address = address;
     this._working = false;
