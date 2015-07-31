@@ -74,17 +74,17 @@ var staticServer = http.createServer(function(request, response){
 
             if(message.type == 'auth'){
                 if(message.key == key){
-                    console.log('S: authorized client');
+                    console.log('S: authorized client: ' + message.sources);
                     authorized = true;
-                    sources = message.sources;
+
                     pubs = _.keys(publishers).filter(function(p){
-                        return _(sources).find(function(s){ return p == s.name });
+                        return _(message.sources).find(function(s){return p == s });
                     }).forEach(function(p){
+                        publishers[p].pub.getDelta(0).then(function(data){
+                            ws.send(JSON.stringify(data));
+                        })
                         publishers[p].pub.sub(function(doc){
-                            ws.send(JSON.stringify({
-                                type: 'op',
-                                doc: doc
-                            }))
+                            ws.send(JSON.stringify(doc));
                         })
                     });
                 }

@@ -96,6 +96,10 @@ Publisher.prototype.showDb = function(){
         })
 }
 
+Publisher.prototype.getDelta = function(startRevision){
+    return this._db.qExec(this._db.find({_id: {$gt: startRevision}}).sort({_id: 1}));
+}
+
 Publisher.prototype.getRecordByHash = function(hash){
     return this._db.qExec(this._db.find({hash: hash}).sort({rev: -1}).limit(1));
 }
