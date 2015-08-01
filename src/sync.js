@@ -121,13 +121,11 @@ if(subscribers){
             });
             ws.on('error', function (err) {
                 console.log('error: ' + err + '. Connecting in 5 secs...')
-                ws.terminate();
                 setTimeout(function(){initSub(s);}, 5000);
 
             });
             ws.on('close', function(){
                 console.log('closed! Connecting in 5 secs...');
-                ws.terminate();
                 setTimeout(function(){initSub(s);}, 5000)
             })
             ws.on('message', function (message) {
