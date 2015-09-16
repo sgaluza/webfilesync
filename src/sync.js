@@ -6,7 +6,8 @@ var log = require('./lib/log')
     , _ = require('lodash')
     , send = require('send')
     , http = require('http')
-    , util = require('util');
+    , util = require('util')
+    , q = require('q');
 
 
 process.stdin.on('readable', function() {
@@ -49,7 +50,7 @@ if(publishers) {
                         if(doc.length == 1){
                             doc = doc[0]
                             request.url = doc.path;
-                            var deferred = Q.defer();
+                            var deferred = q.defer();
                             send(request, request.url, {root: pub.path})
                                 .on('stream',function(){
                                     log.info('Sending started: ' + doc.path);
