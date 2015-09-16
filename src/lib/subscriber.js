@@ -51,6 +51,7 @@ Subscriber.prototype._checkUpdates = function(){
                         self._working = false;
                     })
                     response.on('end', function(){
+                        log.info('Saved file:' + fullPath);
                         self._db.qInsert(up).then(function(){
                             self._working = false;
                             self._checkUpdates();
