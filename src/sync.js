@@ -52,14 +52,14 @@ if(publishers) {
                             var deferred = Q.defer();
                             send(request, request.url, {root: pub.path})
                                 .on('stream',function(){
-                                    logger.info('Sending started: ' + doc.path);
+                                    log.info('Sending started: ' + doc.path);
                                 })
                                 .on('error', function(error){
-                                    logger.error('Sending failed: ' + util.inspect(error));
+                                    log.error('Sending failed: ' + util.inspect(error));
                                     deferred.reject(error)
                                 })
                                 .on('end', function(){
-                                    logger.info('Sending completed: ' + doc.path);
+                                    log.info('Sending completed: ' + doc.path);
                                     deferred.resolve();
                                 })
                                 .pipe(response);
@@ -67,7 +67,7 @@ if(publishers) {
                         }
                     })
                     .catch(function(error){
-                        logger.error('Error during sending file: ' + util.inspect(error));
+                        log.error('Error during sending file: ' + util.inspect(error));
                     });
             }
         }
