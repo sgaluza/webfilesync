@@ -51,6 +51,9 @@ if(publishers) {
                             request.url = doc.path;
                             var sendEmitter = send(request, request.url, {root: pub.path}).pipe(response);
                             var deferred = Q.defer();
+                            sendEmitter.on('stream',function(){
+                                logger.info('Sending started: ' + doc.path);
+                            });
                             sendEmitter.on('end', function(){
                                 logger.info('Sending completed: ' + doc.path);
                                 deferred.resolve();
