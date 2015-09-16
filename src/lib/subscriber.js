@@ -46,13 +46,15 @@ Subscriber.prototype._checkUpdates = function(){
                 var request = http.get(url, function(response){
                     response.pipe(file);
                     response.on('error', function(err){
-                        log.error('error:' + err);
+                        log.error('response emitter error:' + err);
                         self._updates.unshift(up);
                         self._working = false;
                     })
                     response.on('end', function(err){
                         if(err){
-                            log.error('error: ' + err);
+                            log.error('response error: ' + err);
+                            self._updates.unshift(up);
+                            self._working = false;
                             return;
                         }
                         log.info('Saved file:' + fullPath);
@@ -61,6 +63,10 @@ Subscriber.prototype._checkUpdates = function(){
                             self._checkUpdates();
                         })
                     })
+                }).on('error', function(err){
+                    log.error('http get error:' + err);
+                    self._updates.unshift(up);
+                    self._working = false;
                 });
             }
         }
