@@ -1,4 +1,5 @@
 var fs = require('fs')
+    , log = require('./log')
     , path = require('path')
     , Datastore = require('./nedb-promises')
     , _ = require('lodash')
@@ -67,7 +68,7 @@ Publisher.prototype._addFile = function(relativePath){
     return this._db.qFind({path: relativePath})
         .then(function(docs){
             if(docs.length === 0){
-                console.log('Added file: ' + relativePath + '. current rev: ' + (++self._revision));
+                log.info('Added file: ' + relativePath + '. current rev: ' + (++self._revision));
                 var hash = crypto.createHash('sha256')
                     .update(relativePath)
                     .update(new Date().toString())
@@ -85,11 +86,11 @@ Publisher.prototype._addFile = function(relativePath){
 
 
 Publisher.prototype.showDb = function(){
-    console.log(this._name + " Database content: ");
+    log.info(this._name + " Database content: ");
     this._db.qExec(this._db.find({}).sort({name: 1}))
         .then(function(files){
             _(files).forEach(function(f){
-                console.log(f);
+                log.info(f);
             }).value();
         })
 }
@@ -104,7 +105,7 @@ Publisher.prototype.getRecordByHash = function(hash){
 
 Publisher.prototype.dropDb = function(){
     var self = this;
-    console.log(this._name + " Drop Database");
+    log.info(this._name + " Drop Database");
     fs.unlinkSync(dbpath + this._name);
     this._init().then(function(){
         return self._syncFolderWithDB();

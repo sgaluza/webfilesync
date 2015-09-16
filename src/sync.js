@@ -1,3 +1,4 @@
+require('mkdirp')('logs');
 var log = require('./lib/log')
     , config = require('./config')
     , Publisher = require('./lib/publisher')
@@ -6,12 +7,13 @@ var log = require('./lib/log')
     , send = require('send')
     , http = require('http');
 
+
 process.stdin.on('readable', function() {
     var chunk = process.stdin.read();
     if (chunk != null) {
         chunk = chunk.toString().replace(/\s+/gi, '');
         if(chunk == 'db') {
-            console.log('showing dbs:');
+            log.info('showing dbs:');
             _.keys(publishers).forEach(function (p) {
                 publishers[p].pub.showDb();
             });
@@ -56,17 +58,17 @@ if(publishers) {
         var WebSocketServer = require('ws').Server
             , wss = new WebSocketServer({ server: staticServer });
         wss.on('connection', function(ws){
-            console.log('started server on port: ' + port);
+            log.info('started server on port: ' + port);
             var authorized = false;
             var sources = null;
             var pubs = null;
             ws.on('message', function(message){
-                console.log('S: message: ' + message);
+                log.info('S: message: ' + message);
                 message = JSON.parse(message);
 
                 if(message.type == 'auth'){
                     if(message.key == key){
-                        console.log('S: authorized client: ' + message.sources);
+                        log.info('S: authorized client: ' + message.sources);
                         authorized = true;
                         pubs = _.keys(publishers).filter(function(p){
                             return _(message.sources).find(function(s){return p == s });
@@ -84,7 +86,7 @@ if(publishers) {
                         });
                     }
                     else{
-                        console.log('S: wrong key from client');
+                        log.info('S: wrong key from client');
                         ws.close('wrong key');
                     }
                 }
@@ -106,10 +108,10 @@ if(subscribers){
             var WebSocket = require('ws');
             var ws = new WebSocket(s.address);
             ws.on('open', function () {
-                console.log('C: subscribing to: ' + s.address);
+                log.info('C: subscribing to: ' + s.address);
                 s.sub.getRevision().then(function (rev) {
 
-                    console.log('send revision: ' + rev)
+                    log.info('send revision: ' + rev)
                     ws.send(JSON.stringify({
                         type: 'auth',
                         key: s.key,
@@ -120,12 +122,12 @@ if(subscribers){
 
             });
             ws.on('error', function (err) {
-                console.log('error: ' + err + '. Connecting in 5 secs...')
+                log.error('error: ' + err + '. Connecting in 5 secs...')
                 setTimeout(function(){initSub(s);}, 5000);
 
             });
             ws.on('close', function(){
-                console.log('closed! Connecting in 5 secs...');
+                log.info('closed! Connecting in 5 secs...');
                 setTimeout(function(){initSub(s);}, 5000)
             })
             ws.on('message', function (message) {
