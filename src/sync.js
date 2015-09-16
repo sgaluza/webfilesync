@@ -5,7 +5,8 @@ var log = require('./lib/log')
     , Subscriber = require('./lib/subscriber')
     , _ = require('lodash')
     , send = require('send')
-    , http = require('http');
+    , http = require('http')
+    , util = require('util');
 
 
 process.stdin.on('readable', function() {
@@ -48,8 +49,22 @@ if(publishers) {
                         if(doc.length == 1){
                             doc = doc[0]
                             request.url = doc.path;
-                            send(request, request.url, {root: pub.path}).pipe(response)
+                            var sendEmitter = send(request, request.url, {root: pub.path}).pipe(response);
+                            var deferred = Q.defer();
+                            sendEmitter.on('end', function(){
+                                logger.info('Sending completed: ' + doc.path);
+                                deferred.resolve();
+                            });
+                            sendEmitter.on('error', function(error){
+                                logger.error('Sending failed: ' + util.inspect(error));
+                                deferred.reject(error)
+                            })
+
+                            return deferred.promise;
                         }
+                    })
+                    .catch(function(error){
+                        logger.error('Error during sending file: ' + util.inspect(error));
                     });
             }
         }
