@@ -50,7 +50,7 @@ if(publishers) {
                             doc = doc[0]
                             request.url = doc.path;
                             var deferred = Q.defer();
-                            send(request, request.url, {root: pub.path}).pipe(response)
+                            send(request, request.url, {root: pub.path})
                                 .on('stream',function(){
                                     logger.info('Sending started: ' + doc.path);
                                 })
@@ -61,7 +61,8 @@ if(publishers) {
                                 .on('end', function(){
                                     logger.info('Sending completed: ' + doc.path);
                                     deferred.resolve();
-                                });
+                                })
+                                .pipe(response);
                             return deferred.promise;
                         }
                     })
