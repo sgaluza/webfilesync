@@ -49,20 +49,19 @@ if(publishers) {
                         if(doc.length == 1){
                             doc = doc[0]
                             request.url = doc.path;
-                            var sendEmitter = send(request, request.url, {root: pub.path}).pipe(response);
                             var deferred = Q.defer();
-                            sendEmitter.on('stream',function(){
-                                logger.info('Sending started: ' + doc.path);
-                            });
-                            sendEmitter.on('end', function(){
-                                logger.info('Sending completed: ' + doc.path);
-                                deferred.resolve();
-                            });
-                            sendEmitter.on('error', function(error){
-                                logger.error('Sending failed: ' + util.inspect(error));
-                                deferred.reject(error)
-                            })
-
+                            send(request, request.url, {root: pub.path}).pipe(response)
+                                .on('stream',function(){
+                                    logger.info('Sending started: ' + doc.path);
+                                })
+                                .on('error', function(error){
+                                    logger.error('Sending failed: ' + util.inspect(error));
+                                    deferred.reject(error)
+                                })
+                                .on('end', function(){
+                                    logger.info('Sending completed: ' + doc.path);
+                                    deferred.resolve();
+                                });
                             return deferred.promise;
                         }
                     })

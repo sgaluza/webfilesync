@@ -46,11 +46,15 @@ Subscriber.prototype._checkUpdates = function(){
                 var request = http.get(url, function(response){
                     response.pipe(file);
                     response.on('error', function(err){
-                        log.info('error:' + err);
+                        log.error('error:' + err);
                         self._updates.unshift(up);
                         self._working = false;
                     })
-                    response.on('end', function(){
+                    response.on('end', function(err){
+                        if(err){
+                            log.error('error: ' + err);
+                            return;
+                        }
                         log.info('Saved file:' + fullPath);
                         self._db.qInsert(up).then(function(){
                             self._working = false;
