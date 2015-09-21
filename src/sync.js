@@ -126,6 +126,11 @@ if(subscribers){
             s.sub = new Subscriber(skey, s.address, s.folders);
             var WebSocket = require('ws');
             var ws = new WebSocket(s.address);
+            var ping = function(){
+                log.info('ping...');
+                ws.ping();
+                setTimeout(ping, 5 * 60 * 1000);
+            }
             ws.on('open', function () {
                 log.info('C: subscribing to: ' + s.address);
                 s.sub.getRevision().then(function (rev) {
@@ -137,6 +142,7 @@ if(subscribers){
                         sources: _.keys(s.folders),
                         rev: rev
                     }))
+                    ping();
                 })
 
             });
@@ -160,12 +166,7 @@ if(subscribers){
 
             })
 
-            var ping = function(){
-                log.info('ping...');
-                ws.ping();
-                setTimeout(ping, 5 * 60 * 1000);
-            }
-            ping();
+
         }
 
         initSub(s);
