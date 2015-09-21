@@ -159,6 +159,13 @@ if(subscribers){
                 }).value();
 
             })
+
+            var ping = function(){
+                log.info('ping...');
+                ws.ping();
+                setTimeout(ping, 5 * 60 * 1000);
+            }
+            ping();
         }
 
         initSub(s);
