@@ -139,7 +139,6 @@ if(subscribers){
                         sources: _.keys(s.folders),
                         rev: rev
                     }))
-                    ping();
                 })
 
             });
