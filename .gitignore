@@ -2,3 +2,7 @@ src/.idea/
 src/db/
 src/node_modules/
 src/npm-debug.log
+dest
+npm-debug.log
+config.js
+src/logs
