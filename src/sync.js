@@ -81,6 +81,11 @@ if(publishers) {
             var authorized = false;
             var sources = null;
             var pubs = null;
+
+            ws.on('ping', function(){
+                ws.pong();
+            });
+
             ws.on('message', function(message){
                 log.info('S: message: ' + message);
                 message = JSON.parse(message);
@@ -127,6 +132,29 @@ if(subscribers){
             var WebSocket = require('ws');
             var ws = new WebSocket(s.address);
 
+            ws.pingssent = 0;
+
+            var sendPing = function() {
+                if (ws.pingssent >= 2)   // how many missed pings you will tolerate before assuming connection broken.
+                {
+                    log.error('Ping/Pong failed:(. Reconnecting...');
+                    ws.close();
+                }
+                else
+                {
+                    log.info(s.address + ': ping...');
+                    ws.ping();
+                    ws.pingssent++;
+                }
+                setTimeout(sendPing, 60*1000);
+            };
+
+               //  75 seconds between pings
+
+            ws.on("pong", function() {    // we received a pong from the client.
+                log.info(s.address + ': pong!');
+                ws.pingssent = 0;    // reset ping counter.
+            });
 
             ws.on('open', function () {
                 log.info('C: subscribing to: ' + s.address);
@@ -160,13 +188,9 @@ if(subscribers){
                     s.sub.update(m);
                 }).value();
 
-            })
+            });
 
-            setTimeout(function(){
-                ws.close(100, 'Manual reset');
-            }, 5*1000*60);
-
-
+            sendPing();
         }
 
         initSub(s);
