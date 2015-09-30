@@ -168,7 +168,7 @@ if(subscribers){
                         rev: rev
                     }))
                 })
-
+                sendPing();
             });
             ws.on('error', function (err) {
                 log.error('error: ' + err + '. Connecting in 5 secs...')
@@ -190,7 +190,6 @@ if(subscribers){
 
             });
 
-            sendPing();
         }
 
         initSub(s);
