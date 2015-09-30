@@ -81,11 +81,7 @@ if(publishers) {
             var authorized = false;
             var sources = null;
             var pubs = null;
-
-            ws.on('ping', function(){
-                ws.pong();
-            });
-
+            
             ws.on('message', function(message){
                 log.info('S: message: ' + message);
                 message = JSON.parse(message);
