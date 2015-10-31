@@ -43,6 +43,9 @@ Subscriber.prototype._checkUpdates = function(){
                 var file = fs.createWriteStream(fullPath);
                 var url = this._address + '/' + up.source + '/' + up.hash;
                 log.info(url, '->', fullPath);
+
+                var errorOccured = false;
+
                 var request = http.get(url, function(response){
                     response.pipe(file);
                     response.on('error', function(err){
@@ -51,6 +54,7 @@ Subscriber.prototype._checkUpdates = function(){
                         self._working = false;
                     })
                     response.on('end', function(err){
+                        if(errorOccured && !err) err = errorOccured;
                         if(err){
                             log.error('response error: ' + err);
                             self._updates.unshift(up);
@@ -64,6 +68,7 @@ Subscriber.prototype._checkUpdates = function(){
                         })
                     })
                 }).on('error', function(err){
+                    errorOccured = err;
                     log.error('http get error:' + err);
                     self._updates.unshift(up);
                     self._working = false;
