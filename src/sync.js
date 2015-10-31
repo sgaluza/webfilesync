@@ -153,7 +153,7 @@ if(subscribers){
                 ws.pingssent = 0;    // reset ping counter.
             });
 
-            ws.on(sKey + ' open', function () {
+            ws.on('open', function () {
                 log.info(skey + ' C: subscribing to: ' + s.address);
                 s.sub.getRevision().then(function (rev) {
 
