@@ -142,8 +142,8 @@ if(subscribers){
                     log.info(skey + ': ping...');
                     ws.ping(null, null, true);
                     ws.pingssent++;
+                    setTimeout(sendPing, 60*1000);
                 }
-                setTimeout(sendPing, 60*1000);
             };
 
                //  75 seconds between pings
