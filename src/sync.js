@@ -81,12 +81,13 @@ if(publishers) {
             var authorized = false;
             var sources = null;
             var pubs = null;
-            
+
             ws.on('message', function(message){
                 log.info('S: message: ' + message);
                 message = JSON.parse(message);
 
                 if(message.type == 'auth'){
+                    sources = message.sources;
                     if(message.key == key){
                         log.info('S: authorized client: ' + message.sources);
                         authorized = true;
@@ -133,12 +134,12 @@ if(subscribers){
             var sendPing = function() {
                 if (ws.pingssent >= 2)   // how many missed pings you will tolerate before assuming connection broken.
                 {
-                    log.error('Ping/Pong failed:(. Reconnecting...');
+                    log.error(sKey + ' Ping/Pong failed:(. Reconnecting...');
                     ws.close();
                 }
                 else
                 {
-                    log.info(s.address + ': ping...');
+                    log.info(sKey + ': ping...');
                     ws.ping();
                     ws.pingssent++;
                 }
@@ -147,16 +148,16 @@ if(subscribers){
 
                //  75 seconds between pings
 
-            ws.on("pong", function() {    // we received a pong from the client.
+            ws.on(sKey + " pong", function() {    // we received a pong from the client.
                 log.info(s.address + ': pong!');
                 ws.pingssent = 0;    // reset ping counter.
             });
 
-            ws.on('open', function () {
-                log.info('C: subscribing to: ' + s.address);
+            ws.on(sKey + ' open', function () {
+                log.info(sKey + ' C: subscribing to: ' + s.address);
                 s.sub.getRevision().then(function (rev) {
 
-                    log.info('send revision: ' + rev)
+                    log.info(sKey + ' send revision: ' + rev)
                     ws.send(JSON.stringify({
                         type: 'auth',
                         key: s.key,
@@ -167,12 +168,12 @@ if(subscribers){
                 sendPing();
             });
             ws.on('error', function (err) {
-                log.error('error: ' + err + '. Connecting in 5 secs...')
+                log.error(sKey + ' error: ' + err + '. Connecting in 5 secs...')
                 setTimeout(function(){initSub(s);}, 5000);
 
             });
             ws.on('close', function(){
-                log.info('closed! Connecting in 5 secs...');
+                log.info(sKey + ' closed! Connecting in 5 secs...');
                 setTimeout(function(){initSub(s);}, 5000)
             })
             ws.on('message', function (message) {
