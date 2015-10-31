@@ -134,12 +134,12 @@ if(subscribers){
             var sendPing = function() {
                 if (ws.pingssent >= 2)   // how many missed pings you will tolerate before assuming connection broken.
                 {
-                    log.error(sKey + ' Ping/Pong failed:(. Reconnecting...');
+                    log.error(skey + ' Ping/Pong failed:(. Reconnecting...');
                     ws.close();
                 }
                 else
                 {
-                    log.info(sKey + ': ping...');
+                    log.info(skey + ': ping...');
                     ws.ping();
                     ws.pingssent++;
                 }
@@ -148,16 +148,16 @@ if(subscribers){
 
                //  75 seconds between pings
 
-            ws.on(sKey + " pong", function() {    // we received a pong from the client.
-                log.info(s.address + ': pong!');
+            ws.on("pong", function() {    // we received a pong from the client.
+                log.info(skey + ': pong!');
                 ws.pingssent = 0;    // reset ping counter.
             });
 
             ws.on(sKey + ' open', function () {
-                log.info(sKey + ' C: subscribing to: ' + s.address);
+                log.info(skey + ' C: subscribing to: ' + s.address);
                 s.sub.getRevision().then(function (rev) {
 
-                    log.info(sKey + ' send revision: ' + rev)
+                    log.info(skey + ' send revision: ' + rev)
                     ws.send(JSON.stringify({
                         type: 'auth',
                         key: s.key,
@@ -168,12 +168,12 @@ if(subscribers){
                 sendPing();
             });
             ws.on('error', function (err) {
-                log.error(sKey + ' error: ' + err + '. Connecting in 5 secs...')
+                log.error(skey + ' error: ' + err + '. Connecting in 5 secs...')
                 setTimeout(function(){initSub(s);}, 5000);
 
             });
             ws.on('close', function(){
-                log.info(sKey + ' closed! Connecting in 5 secs...');
+                log.info(skey + ' closed! Connecting in 5 secs...');
                 setTimeout(function(){initSub(s);}, 5000)
             })
             ws.on('message', function (message) {
