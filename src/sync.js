@@ -140,7 +140,7 @@ if(subscribers){
                 else
                 {
                     log.info(skey + ': ping...');
-                    ws.ping();
+                    ws.ping(null, null, true);
                     ws.pingssent++;
                 }
                 setTimeout(sendPing, 60*1000);
@@ -175,7 +175,7 @@ if(subscribers){
             ws.on('close', function(){
                 log.info(skey + ' closed! Connecting in 5 secs...');
                 setTimeout(function(){initSub(s);}, 5000)
-            })
+            });
             ws.on('message', function (message) {
                 var m = JSON.parse(message);
                 if (!Array.isArray(m))
