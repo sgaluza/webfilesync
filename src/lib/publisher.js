@@ -18,6 +18,8 @@ var Publisher = function(name, rootPath, port, log){
         .then(function(){
             chokidar.watch(self._path, {persistent: true}).on('all', function(e, p){
                 var relativePath = path.relative(self._path, p);
+                log.info('File change spotted: ' + e + ' path:' + relativePath);
+
                 if(e == 'add'){
                     return self._addFile(relativePath);
                 }
