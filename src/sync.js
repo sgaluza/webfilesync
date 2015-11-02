@@ -1,6 +1,6 @@
 require('mkdirp')('logs');
 var log = require('./lib/log')
-    , config = require('./lib/config')
+    , config = require('./config')
     , Publisher = require('./lib/publisher')
     , Subscriber = require('./lib/subscriber')
     , _ = require('lodash')

@@ -1,5 +1,5 @@
 var log = require('log4js');
-var config = require('./config'), _ = require('lodash');
+var config = require('./../config'), _ = require('lodash');
 var subscribers = config.has('subscribe') ?  config.get('subscribe') : null;
 var publishers = config.has('publish') ? config.get('publish') : null;
 
