@@ -23,7 +23,7 @@ var Subscriber = function(name, address, folders){
 
 Subscriber.prototype.update = function(doc){
     this._updates.push(doc);
-    log.info('update:' + util.inspect(doc));
+    log[this._name].info('update:' + util.inspect(doc));
     this._checkUpdates();
 }
 
@@ -34,34 +34,34 @@ Subscriber.prototype._checkUpdates = function(){
         var up = this._updates.shift();
         if (up.op == 'add') {
             var folder = this._folders[up.source];
-            log.info(up.source, folder);
+            log[self._name].info(up.source, folder);
             if (!_.isUndefined(folder)) {
                 var fullPath = path.normalize(folder.path + '/' + up.path);
                 require('mkdirp').sync(path.dirname(fullPath));
-                log.info('saving: ' + fullPath);
+                log[self._name].info('saving: ' + fullPath);
 
                 var file = fs.createWriteStream(fullPath);
                 var url = this._address + '/' + up.source + '/' + up.hash;
-                log.info(url, '->', fullPath);
+                log[self._name].info(url, '->', fullPath);
 
                 var errorOccured = false;
 
                 var request = http.get(url, function(response){
                     response.pipe(file);
                     response.on('error', function(err){
-                        log.error('response emitter error:' + err);
+                        log[self._name].error('response emitter error:' + err);
                         self._updates.unshift(up);
                         self._working = false;
                     })
                     response.on('end', function(err){
                         if(errorOccured && !err) err = errorOccured;
                         if(err){
-                            log.error('response error: ' + err);
+                            log[self._name].error('response error: ' + err);
                             self._updates.unshift(up);
                             self._working = false;
                             return;
                         }
-                        log.info('Saved file:' + fullPath);
+                        log[self._name].info('Saved file:' + fullPath);
                         self._db.qInsert(up).then(function(){
                             self._working = false;
                             self._checkUpdates();
@@ -69,7 +69,7 @@ Subscriber.prototype._checkUpdates = function(){
                     })
                 }).on('error', function(err){
                     errorOccured = err;
-                    log.error('http get error:' + err);
+                    log[self._name].error('http get error:' + err);
                     self._updates.unshift(up);
                     self._working = false;
                 });

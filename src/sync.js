@@ -1,6 +1,6 @@
 require('mkdirp')('logs');
 var log = require('./lib/log')
-    , config = require('./config')
+    , config = require('./lib/config')
     , Publisher = require('./lib/publisher')
     , Subscriber = require('./lib/subscriber')
     , _ = require('lodash')
@@ -134,12 +134,12 @@ if(subscribers){
             var sendPing = function() {
                 if (ws.pingssent >= 2)   // how many missed pings you will tolerate before assuming connection broken.
                 {
-                    log.error(skey + ' Ping/Pong failed:(. Reconnecting...');
+                    log[skey].error('Ping/Pong failed:(. Reconnecting...');
                     ws.close();
                 }
                 else
                 {
-                    log.info(skey + ': ping...');
+                    //log.info(skey + ': ping...');
                     ws.ping(null, null, true);
                     ws.pingssent++;
                     setTimeout(sendPing, 60*1000);
@@ -149,15 +149,15 @@ if(subscribers){
                //  75 seconds between pings
 
             ws.on("pong", function() {    // we received a pong from the client.
-                log.info(skey + ': pong!');
+                //log.info(skey + ': pong!');
                 ws.pingssent = 0;    // reset ping counter.
             });
 
             ws.on('open', function () {
-                log.info(skey + ' C: subscribing to: ' + s.address);
+                log[skey].info('C: subscribing to: ' + s.address);
                 s.sub.getRevision().then(function (rev) {
 
-                    log.info(skey + ' send revision: ' + rev)
+                    log[skey].info(skey + ' send revision: ' + rev)
                     ws.send(JSON.stringify({
                         type: 'auth',
                         key: s.key,
@@ -168,12 +168,12 @@ if(subscribers){
                 sendPing();
             });
             ws.on('error', function (err) {
-                log.error(skey + ' error: ' + err + '. Connecting in 5 secs...')
+                log[skey].error('error: ' + err + '. Connecting in 5 secs...')
                 setTimeout(function(){initSub(s);}, 5000);
 
             });
             ws.on('close', function(){
-                log.info(skey + ' closed! Connecting in 5 secs...');
+                log[skey].info('closed! Connecting in 5 secs...');
                 setTimeout(function(){initSub(s);}, 5000)
             });
             ws.on('message', function (message) {

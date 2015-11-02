@@ -18,7 +18,7 @@ var Publisher = function(name, rootPath, port, log){
         .then(function(){
             chokidar.watch(self._path, {persistent: true}).on('all', function(e, p){
                 var relativePath = path.relative(self._path, p);
-                log.info('File change spotted: ' + e + ' path:' + relativePath);
+                log[name].info('File change spotted: ' + e + ' path:' + relativePath);
 
                 if(e == 'add'){
                     return self._addFile(relativePath);
@@ -70,7 +70,7 @@ Publisher.prototype._addFile = function(relativePath){
     return this._db.qFind({path: relativePath})
         .then(function(docs){
             if(docs.length === 0){
-                log.info('Added file: ' + relativePath + '. current rev: ' + (++self._revision));
+                log[self._name].info('Added file: ' + relativePath + '. current rev: ' + (++self._revision));
                 var hash = crypto.createHash('sha256')
                     .update(relativePath)
                     .update(new Date().toString())
@@ -88,11 +88,12 @@ Publisher.prototype._addFile = function(relativePath){
 
 
 Publisher.prototype.showDb = function(){
-    log.info(this._name + " Database content: ");
+    name = this._name;
+    log[this.name].info("Database content: ");
     this._db.qExec(this._db.find({}).sort({name: 1}))
         .then(function(files){
             _(files).forEach(function(f){
-                log.info(f);
+                log[name].info(f);
             }).value();
         })
 }
@@ -107,7 +108,7 @@ Publisher.prototype.getRecordByHash = function(hash){
 
 Publisher.prototype.dropDb = function(){
     var self = this;
-    log.info(this._name + " Drop Database");
+    log[this._name].info("Drop Database");
     fs.unlinkSync(dbpath + this._name);
     this._init().then(function(){
         return self._syncFolderWithDB();
