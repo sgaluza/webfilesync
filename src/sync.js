@@ -1,17 +1,15 @@
 require('mkdirp')('logs');
-var log = require('./lib/log')
+const log = require('./lib/log')
     , config = require('./config')
     , Publisher = require('./lib/publisher')
     , Subscriber = require('./lib/subscriber')
-    , _ = require('lodash')
     , send = require('send')
     , http = require('http')
-    , util = require('util')
-    , q = require('q');
+    , util = require('util');
 
 
 process.stdin.on('readable', function() {
-    var chunk = process.stdin.read();
+    const chunk = process.stdin.read();
     if (chunk != null) {
         chunk = chunk.toString().replace(/\s+/gi, '');
         if(chunk == 'db') {
@@ -30,17 +28,18 @@ process.stdin.on('readable', function() {
 
 
 
-var port = config.has('port') ? config.get('port') : -1;
-var key = config.has('key') ? config.get('key') : null;
-var publishers = config.has('publish') ? config.get('publish') : null;
+const port = config.has('port') ? config.get('port') : -1;
+const key = config.has('key') ? config.get('key') : null;
+const publishers = config.has('publish') ? config.get('publish') : null;
 
 if(publishers) {
-    _.keys(publishers).forEach(function (p) {
-        publishers[p].pub = new Publisher(p, publishers[p].path, port, log);
-    });
+    for(const pk in publishers){
+        const p = publishers[pk];
+        p.pub = new Publisher(pk, p.path, port, log); 
+    }
 
-    var staticServer = http.createServer(function(request, response){
-        var m = /^\/(\S+)\/(\S+)$/ig.exec(request.url);
+    const staticServer = http.createServer(function(request, response){
+        const m = /^\/(\S+)\/(\S+)$/ig.exec(request.url);
         if(m){
             var pub = publishers[m[1]];
             if(pub){
@@ -72,50 +71,7 @@ if(publishers) {
                     });
             }
         }
-    }).listen(port, function(){
-
-        var WebSocketServer = require('ws').Server
-            , wss = new WebSocketServer({ server: staticServer });
-        wss.on('connection', function(ws){
-            log.info('started server on port: ' + port);
-            var authorized = false;
-            var sources = null;
-            var pubs = null;
-
-            ws.on('message', function(message){
-                log.info('S: message: ' + message);
-                message = JSON.parse(message);
-
-                if(message.type == 'auth'){
-                    sources = message.sources;
-                    if(message.key == key){
-                        log.info('S: authorized client: ' + message.sources);
-                        authorized = true;
-                        pubs = _.keys(publishers).filter(function(p){
-                            return _(message.sources).find(function(s){return p == s });
-                        }).forEach(function(p){
-                            publishers[p].pub.getDelta(message.rev).then(function(data){
-                                _(data).forEach(function(d){
-                                    d.source = p;
-                                }).value();
-                                ws.send(JSON.stringify(data));
-                            })
-                            publishers[p].pub.sub(function(doc){
-                                doc.source = p;
-                                ws.send(JSON.stringify(doc));
-                            })
-                        });
-                    }
-                    else{
-                        log.info('S: wrong key from client');
-                        ws.close('wrong key');
-                    }
-                }
-            })
-        });
-
-    });
-}
+    })}
 
 
 

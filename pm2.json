@@ -1,0 +1,13 @@
+{
+  "apps" : [{
+    "name"        : "webfilesync",
+    "script"      : "npm",
+    "args"        : "start",
+    "watch"       : true,
+    "ignore_watch": ["db/*", "logs/*", "node_modules"],
+    "cwd"         : "src",
+    "env" : {
+       "NODE_ENV": "production"
+    }
+  }]
+}

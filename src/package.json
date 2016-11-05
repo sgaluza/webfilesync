@@ -2,27 +2,32 @@
   "name": "webfilesync",
   "version": "0.0.1",
   "description": "Simple one-way file syncing tool over the web.",
-  "keywords": ["sync", "backup", "files"],
+  "keywords": [
+    "sync",
+    "backup",
+    "files"
+  ],
   "author": "Sergey Galuza",
   "homepage": "https://github.com/sgaluza/webfilesync.git",
   "main": "sync.js",
   "scripts": {
-    "start":  "npm install && node sync.js"
+    "start": "npm install && node sync.js"
   },
   "bugs": {
     "url": "https://bitbucket.org/sgaluza/backupper/issues",
     "email": "sergey@galuza.com"
   },
-  "license" : "BSD-3-Clause",
+  "license": "BSD-3-Clause",
   "dependencies": {
-    "chokidar": "1.0.5",
-    "nedb": "1.1.2",
-    "ws": "0.7.2",
-    "log4js": "0.6.26",
-    "convict": "0.8.2",
-    "lodash": "3.10.0",
-    "q": "1.4.1",
+    "chokidar": "1.6.1",
+    "convict": "1.5.0",
+    "koa": "^2.0.0",
+    "koa-router": "^2.4.4",
+    "koa-websocket": "^2.1.0",
+    "log4js": "1.0.0",
     "mkdirp": "0.5.1",
-    "send": "0.13.0"
+    "nedb": "1.8.0",
+    "send": "0.14.1",
+    "ws": "1.1.1"
   }
 }

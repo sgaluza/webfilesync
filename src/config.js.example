@@ -2,16 +2,14 @@ var convict = require('convict');
 
 var conf = convict({
     port: "8080",
-    key: "change-to-your-key",
     publish: {
-        source: {path: "./node_modules/"}
+        source: {path: "./node_modules/", key: "change-to-your-key"}
     },
     subscribe: {
         main: {
             address: "http://127.0.0.1:8080",
-            key: "change-to-your-key",
             folders: {
-                source: {path: "../dest/"}
+                source: {path: "../dest/", key: "change-to-your-key"}
             }
         }
     }
