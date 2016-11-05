@@ -1,7 +1,8 @@
 {
   "apps" : [{
     "name"        : "webfilesync",
-    "script"      : "sync.js",
+    "script"      : "npm",
+    "args"        : "start",
     "watch"       : true,
     "ignore_watch": ["db/*", "logs/*"],
     "cwd"         : "src",

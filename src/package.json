@@ -6,6 +6,9 @@
   "author": "Sergey Galuza",
   "homepage": "https://github.com/sgaluza/webfilesync.git",
   "main": "sync.js",
+  "scripts": {
+    "start":  "npm install && node sync.js"
+  },
   "bugs": {
     "url": "https://bitbucket.org/sgaluza/backupper/issues",
     "email": "sergey@galuza.com"
