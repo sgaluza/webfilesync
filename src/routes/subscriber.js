@@ -7,7 +7,7 @@ const confSub = config.has('subscribe') ? config.get('subscribe') : null;
 
 async function initSub(name) {
   const log = getLogger(`sub-${name}`);
-  let erroState = false;
+  let errorState = false;
   try {
     const subscriber = new Subscriber(name, confSub[name].address, confSub[name].folders);
     const ws = new WebSocket(subscriber.address);
