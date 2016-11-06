@@ -3,7 +3,7 @@ import config from '../config';
 import WebSocket from 'ws';
 import getLogger from '../lib/log'
 
-const confSub = config.get('subscribe');
+const confSub = config.has('subscribe') ? config.get('subscribe') : null;
 
 async function initSub(name) {
   const log = getLogger(`sub-${name}`);
@@ -65,7 +65,9 @@ async function initSub(name) {
 }
 
 export default async () => {
-  for (const name of Object.keys(confSub)) {
-    await initSub(name);
+  if(confSub){
+    for (const name of Object.keys(confSub)) {
+      await initSub(name);
+    }
   }
 }
