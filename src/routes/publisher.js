@@ -1,7 +1,9 @@
 import route from 'koa-route';
+import path from 'path';
 import Publisher from '../lib/publisher';
 import config from '../config';
 import getLogger from '../lib/log'
+import fs from 'fs'
 
 const confPub = config.get('publish');
 const publishers = {};
@@ -17,7 +19,16 @@ export async function initPublishers() {
   }
 };
 
-export function router() {
+export function filesRouter(){
+  return route.get('/:folder/:hash',  function* (folder, hash){
+    const pub = publishers[folder];
+    const [file] = yield pub.getRecordByHash(hash);
+    const fullPath = path.join(pub.path, file.path);
+    this.body = fs.createReadStream(fullPath);
+  })
+}
+
+export function wsRouter() {
   return route
     .all('/', async function (next) {
 
@@ -35,12 +46,9 @@ export function router() {
               // filter publishers with correct keys provided in the message
               .filter(p => p.key == message.folders[p.name].key);
             for (const p of authorizedPubs) {
-              const delta = p.getDelta(message.folders[p.name].rev);
+              const delta = await p.getDelta(message.folders[p.name].rev);
               this.websocket.send(JSON.stringify(delta));
               p.sub(doc => {
-
-                console.log('published')
-                
                 doc.folder = p.name;
                 this.websocket.send(JSON.stringify(doc))
               })

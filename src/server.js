@@ -1,5 +1,5 @@
 import Koa from 'koa';
-import {router, initPublishers} from './routes/publisher';
+import {filesRouter, wsRouter, initPublishers} from './routes/publisher';
 import subscribe from './routes/subscriber';
 import websokify from 'koa-websocket';
 import config from './config'
@@ -10,11 +10,12 @@ import convert from 'koa-convert';
 const log = getLogger('ROOT');
 const app = websokify(new Koa());
 
-app.ws.use(router());
+app.ws.use(wsRouter());
+app.use(convert(filesRouter()));
+
 app.listen(config.get('port'), async () => {
     log.info('listening at port %d', config.get('port'));
     try {
-        console.log('publishing...');
         await initPublishers();
     }
     catch (err) {
@@ -23,7 +24,6 @@ app.listen(config.get('port'), async () => {
         process.exit();
     }
     try {
-        console.log('subscribing...');
         await subscribe();
     }
     catch (err) {

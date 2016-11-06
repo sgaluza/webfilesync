@@ -7,11 +7,11 @@ import Datastore from './nedb-promises'
 
 const dbpath = 'db/sub/';
 
-export class Subscriber{
-    constructor (name, address, folders){
+export class Subscriber {
+    constructor(name, address, folders) {
         this._log = getLogger(`sub-${name}`);
         this._name = name;
-        for(const f of Object.keys(folders)){
+        for (const f of Object.keys(folders)) {
             folders[f].path = folders[f].path.replace(/\\/ig, '/');
         }
         this._folders = folders;
@@ -19,68 +19,74 @@ export class Subscriber{
         this._address = address;
         this._working = false;
         this._db = {};
-        for(const f of Object.keys(folders)){
-            this._db[f] = new Datastore({filename: dbpath + this._name + `/${f}`, autoload: true});
+        for (const f of Object.keys(folders)) {
+            this._db[f] = new Datastore({ filename: dbpath + this._name + `/${f}`, autoload: true });
         }
-        
-    }    
-    
-    get url(){
+
+    }
+
+    get url() {
         return this._url;
     }
 
-    get folders(){
+    get folders() {
         return this._folders;
     }
 
-    get address(){
+    get address() {
         return this._address;
     }
 
-    update(doc){
+    update(doc) {
         this._updates.push(doc);
         this._log.info(`update: ${util.inspect(doc)}`);
         this._checkUpdates();
     }
 
-    _checkUpdates(){
-        if(this._updates.length > 0 && !this._working) {
+    _checkUpdates() {
+        if (this._updates.length > 0 && !this._working) {
             this._working = true;
             const up = this._updates.shift();
             if (up.op == 'add') {
                 const folder = this._folders[up.folder];
-                this._log.info(up.folder, folder);
+                this._log.info(`ADDED FILE: ${up.folder}`);
+                this._log.info(folder);
                 if (folder) {
-                    var fullPath = path.normalize(folder.path + '/' + up.path);
-                    require('mkdirp').sync(path.dirname(fullPath));
-                    this._log.info(`saving: ${fullPath}`);
+                    const fullPath = path.normalize(folder.path + '/' + up.path);
+                    const url = this._address + '/' + up.folder + '/' + up.hash;
+                    this._log.info(`SAVING: ${url} -> ${fullPath}`);
 
-                    var file = fs.createWriteStream(fullPath);
-                    var url = this._address + '/' + up.folder + '/' + up.hash;
-                    this._log.info(`url -> ${fullPath}`);
+                    let errorOccured = false;
 
-                    var errorOccured = false;
-
-                    var request = http.get(url, (response) => {
-                        response.pipe(file);
-                        response.on('error', (err) => {
-                            this._log.error(`response emitter error: ${err}`);
-                            this._updates.unshift(up);
-                            this._working = false;
-                        })
-                        response.on('end', async (err) => {
-                            if(errorOccured && !err) err = errorOccured;
-                            if(err){
-                                this._log.error(`response error: ${err}`);
+                    http.get(url, (response) => {
+                        if (response.statusCode == 200) {
+                            require('mkdirp').sync(path.dirname(fullPath));
+                            var file = fs.createWriteStream(fullPath);
+                            response.pipe(file);
+                            response.on('error', (err) => {
+                                this._log.error(`response emitter error: ${err}`);
                                 this._updates.unshift(up);
                                 this._working = false;
-                                return;
-                            }
-                            this._log.info(`Saved file: ${fullPath}`);
-                            await this._db[up.folder].qInsert(up);
+                            })
+                            response.on('end', async (err) => {
+                                if (errorOccured && !err) err = errorOccured;
+                                if (err) {
+                                    this._log.error(`response error: ${err}`);
+                                    this._updates.unshift(up);
+                                    this._working = false;
+                                    return;
+                                }
+                                this._log.info(`Saved file: ${fullPath}`);
+                                await this._db[up.folder].qInsert(up);
+                                this._working = false;
+                                this._checkUpdates();
+                            })
+                        }
+                        else{
+                            this._log.error(`Can't download file: ${url}. Status Code: ${response.statusCode}`);
                             this._working = false;
                             this._checkUpdates();
-                        })
+                        }
                     }).on('error', (err) => {
                         errorOccured = err;
                         this._log.error(`http get error: ${err}`);
@@ -92,8 +98,8 @@ export class Subscriber{
         }
     }
 
-    async getRevision(folder){
-        const res = await this._db[folder].find({}).sort({_id: -1}).limit(1);
+    async getRevision(folder) {
+        const res = await this._db[folder].qExec(this._db[folder].find({}).sort({ _id: -1 }).limit(1));
         return res.length > 0 ? res[0]._id : 0;
     }
 } 

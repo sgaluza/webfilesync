@@ -36,6 +36,10 @@ export default class Publisher {
         return this._key;
     }
 
+    get path(){
+        return this._path;
+    }
+
     async _addFile(relativePath) {
         relativePath = relativePath.replace(/\\/gi, '/');
         if (relativePath[0] !== '/') relativePath = '/' + relativePath;
@@ -52,6 +56,7 @@ export default class Publisher {
 
             var doc = { _id: this._revision, path: relativePath, op: 'add', date: new Date(), hash: hash };
             await this._db.qInsert(doc);
+            doc.folder = this._name;
             await this.publish(doc);
         }
     }
@@ -87,7 +92,11 @@ export default class Publisher {
     }
 
     async getDelta(startRevision) {
-        return await this._db.qExec(this._db.find({ _id: { $gt: startRevision } }).sort({ _id: 1 }));
+        const data = await this._db.qExec(this._db.find({ _id: { $gt: startRevision } }).sort({ _id: 1 }));
+        for(const d of data){
+            d.folder = this._name;
+        }
+        return data;
     }
 
     async getRecordByHash(hash) {
