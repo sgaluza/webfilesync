@@ -11,7 +11,7 @@
   "homepage": "https://github.com/sgaluza/webfilesync.git",
   "main": "sync.js",
   "scripts": {
-    "start": "npm install && node dist/server.js"
+    "start": "npm install && babel src -d dist/ && node dist/server.js"
   },
   "bugs": {
     "url": "https://bitbucket.org/sgaluza/backupper/issues",
