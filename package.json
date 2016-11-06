@@ -11,7 +11,7 @@
   "homepage": "https://github.com/sgaluza/webfilesync.git",
   "main": "sync.js",
   "scripts": {
-    "start": "npm install && node sync.js"
+    "start": "npm install && node dist/server.js"
   },
   "bugs": {
     "url": "https://bitbucket.org/sgaluza/backupper/issues",
@@ -19,10 +19,20 @@
   },
   "license": "BSD-3-Clause",
   "dependencies": {
+    "babel": "^6.5.2",
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.2",
+    "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-es2015-node6": "^0.3.0",
+    "babel-preset-stage-0": "^6.16.0",
+    "babel-register": "^6.18.0",
+    "babel-types": "^6.18.0",
     "chokidar": "1.6.1",
     "convict": "1.5.0",
     "koa": "^2.0.0",
-    "koa-router": "^2.4.4",
+    "koa-router": "^7.0.1",
     "koa-websocket": "^2.1.0",
     "log4js": "1.0.0",
     "mkdirp": "0.5.1",

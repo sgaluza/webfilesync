@@ -6,3 +6,5 @@ dest
 npm-debug.log
 src/logs
 config.js
+dist
+logs

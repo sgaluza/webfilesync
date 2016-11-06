@@ -1,57 +1,44 @@
-var q = require('q')
-    , Datastore = require('nedb');
+var Datastore = require('nedb');
 
-Datastore.prototype.qInsert = function(doc){
-    var deferred = q.defer();
-    this.insert(doc, function(err, newDoc){
-        if(err){
-            deferred.reject(err);
-        }
-        else{
-            deferred.resolve();
-        }
+Datastore.prototype.qInsert = (doc) => {
+    return new Promise((res, rej) => {
+        this.insert(doc, function (err, newDoc) {
+            if (err)
+                return rej(err);
+            res();
+        })
     })
-    return deferred.promise;
 }
 
-Datastore.prototype.qFind = function(doc){
-    var deferred = q.defer();
-    this.find(doc, function(err, cursor){
-        if(err){
-            deferred.reject(err);
-        }
-        else{
-            deferred.resolve(cursor);
-        }
-    })
-    return deferred.promise;
+Datastore.prototype.qFind = (doc) => {
+    return new Promise((res, rej) => {
+        this.find(doc, function (err, cursor) {
+            if (err)
+                return rej(err);
+            res(cursor);
+        })
+    });
 }
 
-Datastore.prototype.qCount = function(doc){
-    var deferred = q.defer();
-    this.count(doc, function(err, count){
-        if(err){
-            deferred.reject(err);
-        }
-        else{
-            deferred.resolve(count);
-        }
-    })
-    return deferred.promise;
+Datastore.prototype.qCount = (doc) => {
+    return new Promise((res, rej) => {
+        this.count(doc, function (err, count) {
+            if (err)
+                rej(err);
+            res(count);
+        })
+    });
 }
 
 
-Datastore.prototype.qExec = function(cursor){
-    var deferred = q.defer();
-    cursor.exec(function(err, cursor){
-        if(err){
-            deferred.reject(err);
-        }
-        else{
-            deferred.resolve(cursor);
-        }
+Datastore.prototype.qExec = function (cursor) {
+    return new Promise((res, rej) => {
+        cursor.exec(function (err, cursor) {
+            if (err)
+                rej(err);
+            res(cursor);
+        })
     })
-    return deferred.promise;
 }
 
 module.exports = Datastore;

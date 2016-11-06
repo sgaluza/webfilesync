@@ -1,6 +1,11 @@
-var log = require('log4js');
-var config = require('./../config'), _ = require('lodash');
-var subscribers = config.has('subscribe') ?  config.get('subscribe') : null;
+import log from 'log4js';
+import mkdirp from 'mkdirp'
+import config from './../config'
+
+
+mkdirp('logs');
+
+var subscribers = config.has('subscribe') ? config.get('subscribe') : null;
 var publishers = config.has('publish') ? config.get('publish') : null;
 
 var appenders = [
@@ -8,37 +13,46 @@ var appenders = [
     { type: 'file', filename: 'logs/logger.log', "maxLogSize": 20480000, 'backups': 20 }
 ];
 
-if(subscribers)
-    _.keys(subscribers).forEach(function(key){
-        appenders.push({ type: 'file',
+if (subscribers) {
+    for (const key of Object.keys(subscribers)) {
+        appenders.push({
+            type: 'file',
             filename: 'logs/' + key + '.log',
             "maxLogSize": 20480000,
             'backups': 20,
-            category: key });
-    });
-if(publishers)
-    _.keys(publishers).forEach(function (key) {
-        appenders.push({ type: 'file',
+            category: key
+        });
+    }
+}
+if (publishers) {
+    for (const key of Object.keys(publishers)) {
+        appenders.push({
+            type: 'file',
             filename: 'logs/' + key + '.log',
             "maxLogSize": 20480000,
             'backups': 20,
-            category: key });
-    });
-
+            category: key
+        });
+    };
+}
 
 log.configure({
     appenders: appenders
 });
 
-var logger = log.getLogger();
+const logger = log.getLogger();
 
-if(subscribers)
-    _.keys(subscribers).forEach(function(key){
+if (subscribers) {
+    for (const key of Object.keys(subscribers)) {
         logger[key] = log.getLogger(key);
-    });
-if(publishers)
-    _.keys(publishers).forEach(function(key){
+    }
+}
+if (publishers) {
+    for (const key of Object.keys(publishers)) {
         logger[key] = log.getLogger(key);
-    });
+    };
+}
 
-module.exports = logger;
+export default () => {
+    return logger;
+}

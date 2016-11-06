@@ -1,10 +1,25 @@
 import Koa from 'koa';
-import {routes as publisherRoutes} from './routes/publisher';
-import websokify from 'koa-websocket'; 
-const app = websokify(Koa());
+import {publisherRoutes} from './routes/publisher';
+import subscribe from './routes/subscriber';
+import websokify from 'koa-websocket';
+import config from './config'
+import process from 'process';
+import getLogger from './lib/log'
+
+const log = getLogger();
+const app = websokify(new Koa());
 
 app.use(publisherRoutes());
 
-app.listen(config.get('port'), function () {
-    console.log('listening at port %d', config.get('port'));
+app.listen(config.get('port'), async () => {
+    log.info('listening at port %d', config.get('port'));
+
+    try{
+        await subscribe();
+    }
+    catch(err){
+        log.error('SUBSCRIBERS ERROR: ');
+        log.error(err);
+        process.exit();
+    }
 });

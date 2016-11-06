@@ -1,31 +1,33 @@
-import Subscriber from '../lib/subscriber';
+import {Subscriber} from '../lib/subscriber';
 import config from '../config';
-import WebSocket from ws;
+import WebSocket from 'ws';
+import getLogger from '../lib/log'
 
 const confSub = config.get('subscribe');
+const log = getLogger();
 
 async function initSub(name){
-  const subscriber = new Subscriber(name, confPub[name].address, confPub[name].folders);
+  const subscriber = new Subscriber(name, confSub[name].address, confSub[name].folders);
     const ws = new WebSocket(s.address);
 
-    ws.on('open', function () {
-      // log[skey].info('C: subscribing to: ' + s.address);
+    ws.on('open', async () => {
+      log[name].info(`C: subscribing to: ${subscriber.address}`);
       const rev = await subscriber.getRevision();
-      // log[skey].info(skey + ' send revision: ' + rev)
+      log[name].info(`${name} sent revision: ${rev}`)
       ws.send(JSON.stringify({
         type: 'auth',
         key: s.key,
-        folders: s.folders.keys().map(f => { return { folder: f, rev: await subscriber.getRevision(f) } })
+        folders: Object.keys(s.folders).map(async (f) => { return { folder: f, rev: await subscriber.getRevision(f) } })
       }))
     });
 
-    ws.on('error', (err) => {
-      //log[skey].error('error: ' + err + '. Connecting in 5 secs...')
-      setTimeout(function () { await initSub(s); }, 5000);
+    ws.on('error', async (err) => {
+      log[name].error(`error: ${err}. Connecting in 5 secs...`)
+      setTimeout(async () => { await initSub(s); }, 5000);
     });
-    ws.on('close', () => {
-      //log[skey].info('closed! Connecting in 5 secs...');
-      setTimeout(() => { await initSub(s); }, 5000)
+    ws.on('close',async  () => {
+      log[name].info(`closed! Connecting in 5 secs...`);
+      setTimeout(async () => { await initSub(s); }, 5000)
     });
     ws.on('message', (message) => {
       const m = JSON.parse(message);
