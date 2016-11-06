@@ -16,6 +16,11 @@ export default class Publisher {
         this._path = rootPath;
         this._callbacks = [];
         this._key = key;
+        this._db = new Datastore(`${dbpath}${name}`);
+    }
+
+    get key(){
+        return this._key;
     }
 
     async _addFile(relativePath) {

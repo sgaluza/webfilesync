@@ -9,20 +9,24 @@ async function initSub(name) {
   const log = getLogger(`sub-${name}`);
   const subscriber = new Subscriber(name, confSub[name].address, confSub[name].folders);
   const ws = new WebSocket(subscriber.address);
-
   ws.on('open', async () => {
     try {
-      log.info(`C: subscribing to: ${subscriber.address}`);
-      const data = JSON.stringify({
+      log.info(`subscribing to: ${subscriber.address}`);
+      const data = {
         type: 'auth',
-        folders: Object.keys(subscriber.folders)
-          .map(async (f) => { return { folder: f, rev: await subscriber.getRevision(f), key: subscriber.folders[f].key } })
-      }); 
+        folders: {}
+      }; 
+      for(const f of Object.keys(subscriber.folders)){
+        const rev = await subscriber.getRevision(f);
+        data.folders[f] = {
+          key: subscriber.folders[f].key,
+          rev: rev
+        };
+      }
       log.info(data);
-      ws.send(data);
+      ws.send(JSON.stringify(data));
     }
     catch (err) {
-
       log.error(`SUB WS ${name} OPEN error...`);
       log.error(err);
     }
