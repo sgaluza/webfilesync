@@ -5,7 +5,7 @@ import config from '../config';
 import getLogger from '../lib/log'
 import fs from 'fs'
 
-const confPub = config.get('publish');
+const confPub = config.has('publish') ? config.get('publish') : null;
 const publishers = {};
 const log = getLogger('PUBS-ROUTER');
 
