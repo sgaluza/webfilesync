@@ -37,7 +37,7 @@ app.listen(config.get('port'), async () => {
 
 });
 
-app.on('error', () => {
+app.on('error', (err) => {
     log.error('APP ERROR:');
     log.error(err)
     process.exit();

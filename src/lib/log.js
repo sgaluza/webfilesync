@@ -35,7 +35,7 @@ if (publishers) {
         });
     };
 }
-appenders.push({ type: 'console', category: 'ROOT' });
+appenders.push({ type: 'console' });
 
 
 log.configure({
