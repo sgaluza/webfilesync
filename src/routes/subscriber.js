@@ -43,12 +43,12 @@ async function initSub(name) {
     setTimeout(async () => { await initSub(s); }, 5000)
   });
   ws.on('message', (message) => {
-    const m = JSON.parse(message);
+    let m = JSON.parse(message);
     if (!Array.isArray(m))
       m = [m];
 
-    for (const m of m) {
-      subscriber.update(m);
+    for (let mes of m) {
+      subscriber.update(mes);
     }
   });
 

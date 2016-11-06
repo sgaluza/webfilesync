@@ -1,5 +1,5 @@
 import Koa from 'koa';
-import route from './routes/publisher';
+import {router, initPublishers} from './routes/publisher';
 import subscribe from './routes/subscriber';
 import websokify from 'koa-websocket';
 import config from './config'
@@ -10,11 +10,20 @@ import convert from 'koa-convert';
 const log = getLogger('ROOT');
 const app = websokify(new Koa());
 
-app.ws.use(route());
+app.ws.use(router());
 app.listen(config.get('port'), async () => {
     log.info('listening at port %d', config.get('port'));
-
     try {
+        console.log('publishing...');
+        await initPublishers();
+    }
+    catch (err) {
+        log.error('PUBLISHERS INIT ERROR: ');
+        log.error(err);
+        process.exit();
+    }
+    try {
+        console.log('subscribing...');
         await subscribe();
     }
     catch (err) {
@@ -22,6 +31,10 @@ app.listen(config.get('port'), async () => {
         log.error(err);
         process.exit();
     }
+
+
+            
+
 });
 
 app.on('error', () => {

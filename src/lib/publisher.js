@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
+import chokidar from 'chokidar'
 
 import Datastore from './nedb-promises'
 import getLogger from './log'
@@ -16,10 +17,22 @@ export default class Publisher {
         this._path = rootPath;
         this._callbacks = [];
         this._key = key;
-        this._db = new Datastore(`${dbpath}${name}`);
     }
 
-    get key(){
+    async init() {
+        this._db = new Datastore({ filename: dbpath + this._name, autoload: true });
+        this._revision = await this._db.qCount({})
+
+        chokidar.watch(this._path, { persistent: true }).on('all', async (e, p) => {
+            var relativePath = path.relative(this._path, p);
+            this._log.info('File change spotted: ' + e + ' path:' + relativePath);
+            if (e == 'add') {
+                await this._addFile(relativePath);
+            }
+        });
+    }
+
+    get key() {
         return this._key;
     }
 

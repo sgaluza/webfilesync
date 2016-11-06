@@ -7,15 +7,20 @@ const confPub = config.get('publish');
 const publishers = {};
 const log = getLogger('PUBS-ROUTER');
 
-if (confPub) {
-  for (const name in confPub) {
-    publishers[name] = new Publisher(name, confPub[name].path, confPub[name].key);
+export async function initPublishers() {
+  if (confPub) {
+    for (const name in confPub) {
+      const pub = new Publisher(name, confPub[name].path, confPub[name].key);
+      await pub.init();
+      publishers[name] = pub;
+    }
   }
-}
+};
 
-export default () => {
+export function router() {
   return route
-    .all('/', function* (next) {
+    .all('/', async function (next) {
+
       try {
         this.websocket.on('message', async (message) => {
           log.info(`message: ${message}`);
@@ -29,10 +34,13 @@ export default () => {
               .map(p => publishers[p])
               // filter publishers with correct keys provided in the message
               .filter(p => p.key == message.folders[p.name].key);
-
             for (const p of authorizedPubs) {
-              this.websocket.send(JSON.stringify(await p.getDelta(message.folders[p.name].rev)));
+              const delta = p.getDelta(message.folders[p.name].rev);
+              this.websocket.send(JSON.stringify(delta));
               p.sub(doc => {
+
+                console.log('published')
+                
                 doc.folder = p.name;
                 this.websocket.send(JSON.stringify(doc))
               })
