@@ -4,7 +4,7 @@
     "script"      : "npm",
     "args"        : "start",
     "watch"       : true,
-    "ignore_watch": ["db/*", "logs/*", "node_modules/*"],
+    "ignore_watch": ["db/*", "logs/*", "node_modules/*", "dist/*"],
     "env" : {
        "NODE_ENV": "production"
     }
