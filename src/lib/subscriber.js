@@ -49,8 +49,6 @@ export class Subscriber {
             const up = this._updates.shift();
             if (up.op == 'add') {
                 const folder = this._folders[up.folder];
-                this._log.info(`ADDED FILE: ${up.folder}`);
-                this._log.info(folder);
                 if (folder) {
                     const fullPath = path.normalize(folder.path + '/' + up.path);
                     const url = this._address + '/' + up.folder + '/' + up.hash;
