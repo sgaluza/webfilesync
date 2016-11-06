@@ -25,6 +25,10 @@ export class Subscriber {
 
     }
 
+    get name() {
+        return this._name;
+    }
+
     get url() {
         return this._url;
     }
