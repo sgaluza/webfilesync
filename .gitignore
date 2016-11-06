@@ -8,3 +8,4 @@ src/logs
 config.js
 dist
 logs
+db

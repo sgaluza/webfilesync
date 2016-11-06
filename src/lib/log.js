@@ -9,29 +9,39 @@ var subscribers = config.has('subscribe') ? config.get('subscribe') : null;
 var publishers = config.has('publish') ? config.get('publish') : null;
 
 var appenders = [
-    { type: 'console' },
-    { type: 'file', filename: 'logs/logger.log', "maxLogSize": 20480000, 'backups': 20 }
+    { type: 'console', category: 'ROOT' },
+    { type: 'file', filename: 'logs/logger.log', "maxLogSize": 20480000, 'backups': 20, category: 'ROOT' },
+    { type: 'console', category: 'PUBS-ROUTER' },
+    { type: 'file', filename: 'logs/logger.log', "maxLogSize": 20480000, 'backups': 20, category: 'PUBS-ROUTER' }
 ];
 
 if (subscribers) {
     for (const key of Object.keys(subscribers)) {
         appenders.push({
+            type: 'console',
+            category: `sub-${key}`
+        })
+        appenders.push({
             type: 'file',
             filename: 'logs/' + key + '.log',
             "maxLogSize": 20480000,
             'backups': 20,
-            category: key
+            category: `sub-${key}`
         });
     }
 }
 if (publishers) {
     for (const key of Object.keys(publishers)) {
         appenders.push({
+            type: 'console',
+            category: `pub-${key}`
+        })
+        appenders.push({
             type: 'file',
             filename: 'logs/' + key + '.log',
             "maxLogSize": 20480000,
             'backups': 20,
-            category: key
+            category: `pub-${key}`
         });
     };
 }
@@ -40,19 +50,4 @@ log.configure({
     appenders: appenders
 });
 
-const logger = log.getLogger();
-
-if (subscribers) {
-    for (const key of Object.keys(subscribers)) {
-        logger[key] = log.getLogger(key);
-    }
-}
-if (publishers) {
-    for (const key of Object.keys(publishers)) {
-        logger[key] = log.getLogger(key);
-    };
-}
-
-export default () => {
-    return logger;
-}
+export default log.getLogger;

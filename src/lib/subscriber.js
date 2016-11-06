@@ -6,27 +6,40 @@ import getLogger from './log'
 import Datastore from './nedb-promises'
 
 const dbpath = 'db/sub/';
-const log = getLogger();
 
 export class Subscriber{
     constructor (name, address, folders){
+        this._log = getLogger(`sub-${name}`);
         this._name = name;
-        for(const f of folders){
-            f.path = f.path.replace(/\\/ig, '/');
+        for(const f of Object.keys(folders)){
+            folders[f].path = folders[f].path.replace(/\\/ig, '/');
         }
         this._folders = folders;
         this._updates = [];
         this._address = address;
         this._working = false;
-        for(const f of folder){
+        this._db = {};
+        for(const f of Object.keys(folders)){
             this._db[f] = new Datastore({filename: dbpath + this._name + `/${f}`, autoload: true});
         }
         
     }    
+    
+    get url(){
+        return this._url;
+    }
+
+    get folders(){
+        return this._folders;
+    }
+
+    get address(){
+        return this._address;
+    }
 
     update(doc){
         this._updates.push(doc);
-        log[this._name].info(`update: ${util.inspect(doc)}`);
+        this._log.info(`update: ${util.inspect(doc)}`);
         this._checkUpdates();
     }
 
@@ -36,41 +49,41 @@ export class Subscriber{
             const up = this._updates.shift();
             if (up.op == 'add') {
                 const folder = this._folders[up.folder];
-                log[this._name].info(up.folder, folder);
+                this._log.info(up.folder, folder);
                 if (folder) {
                     var fullPath = path.normalize(folder.path + '/' + up.path);
                     require('mkdirp').sync(path.dirname(fullPath));
-                    log[this._name].info(`saving: ${fullPath}`);
+                    this._log.info(`saving: ${fullPath}`);
 
                     var file = fs.createWriteStream(fullPath);
                     var url = this._address + '/' + up.folder + '/' + up.hash;
-                    log[this._name].info(`url -> ${fullPath}`);
+                    this._log.info(`url -> ${fullPath}`);
 
                     var errorOccured = false;
 
                     var request = http.get(url, (response) => {
                         response.pipe(file);
                         response.on('error', (err) => {
-                            log[this._name].error(`response emitter error: ${err}`);
+                            this._log.error(`response emitter error: ${err}`);
                             this._updates.unshift(up);
                             this._working = false;
                         })
                         response.on('end', async (err) => {
                             if(errorOccured && !err) err = errorOccured;
                             if(err){
-                                log[this._name].error(`response error: ${err}`);
+                                this._log.error(`response error: ${err}`);
                                 this._updates.unshift(up);
                                 this._working = false;
                                 return;
                             }
-                            log[this._name].info(`Saved file: ${fullPath}`);
+                            this._log.info(`Saved file: ${fullPath}`);
                             await this._db[up.folder].qInsert(up);
                             this._working = false;
                             this._checkUpdates();
                         })
                     }).on('error', (err) => {
                         errorOccured = err;
-                        log[this._name].error(`http get error: ${err}`);
+                        this._log.error(`http get error: ${err}`);
                         this._updates.unshift(up);
                         this._working = false;
                     });

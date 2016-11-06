@@ -6,11 +6,12 @@ import Datastore from './nedb-promises'
 import getLogger from './log'
 
 
-const log = getLogger();
+
 const dbpath = 'db/pub/';
 
 export default class Publisher {
     constructor(name, rootPath, key) {
+        this._log = getLogger(`pub-${name}`);
         this._name = name;
         this._path = rootPath;
         this._callbacks = [];
@@ -23,7 +24,7 @@ export default class Publisher {
 
         const docs = await this._db.qFind({ path: relativePath })
         if (!docs.length) {
-            log[this._name].info(`Added file: ${relativePath}. current rev: ${this._revision}`);
+            this._log.info(`Added file: ${relativePath}. current rev: ${this._revision}`);
             this._revision++;
 
             var hash = crypto.createHash('sha256')
@@ -60,10 +61,10 @@ export default class Publisher {
     }
 
     async showDb() {
-        log[this._name].info("Database content: ");
+        this._log.info("Database content: ");
         const files = await this._db.qExec(this._db.find({}).sort({ name: 1 }));
         for (const f of files) {
-            log[this._name].info(f);
+            this._log.info(f);
         }
     }
 
@@ -76,7 +77,7 @@ export default class Publisher {
     }
 
     async dropDb() {
-        log[this._name].info("Drop Database");
+        this._log.info("Drop Database");
         fs.unlinkSync(dbpath + this._name);
         await this._init();
         await this._syncFolderWithDB();
