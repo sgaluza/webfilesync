@@ -9,21 +9,15 @@ var subscribers = config.has('subscribe') ? config.get('subscribe') : null;
 var publishers = config.has('publish') ? config.get('publish') : null;
 
 var appenders = [
-    { type: 'console', category: 'ROOT' },
-    { type: 'file', filename: 'logs/logger.log', "maxLogSize": 20480000, 'backups': 20, category: 'ROOT' },
-    { type: 'console', category: 'PUBS-ROUTER' },
-    { type: 'file', filename: 'logs/logger.log', "maxLogSize": 20480000, 'backups': 20, category: 'PUBS-ROUTER' }
+    { type: 'dateFile', filename: 'logs/logger.log',  category: 'ROOT' },
+    { type: 'dateFile', filename: 'logs/logger.log',  category: 'PUBS-ROUTER' }
 ];
 
 if (subscribers) {
     for (const key of Object.keys(subscribers)) {
         appenders.push({
-            type: 'console',
-            category: `sub-${key}`
-        })
-        appenders.push({
-            type: 'file',
-            filename: 'logs/' + key + '.log',
+            type: 'dateFile',
+            filename: `logs/sub-${key}.log`,
             "maxLogSize": 20480000,
             'backups': 20,
             category: `sub-${key}`
@@ -33,18 +27,16 @@ if (subscribers) {
 if (publishers) {
     for (const key of Object.keys(publishers)) {
         appenders.push({
-            type: 'console',
-            category: `pub-${key}`
-        })
-        appenders.push({
-            type: 'file',
-            filename: 'logs/' + key + '.log',
+            type: 'dateFile',
+            filename: `logs/sub-${key}.log`,
             "maxLogSize": 20480000,
             'backups': 20,
             category: `pub-${key}`
         });
     };
 }
+appenders.push({ type: 'console', category: 'ROOT' });
+
 
 log.configure({
     appenders: appenders
