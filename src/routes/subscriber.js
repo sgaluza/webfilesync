@@ -14,7 +14,7 @@ async function initSub(name) {
 
     ws.on('unexpected-response', function (err) {
       console.log('UNEXPECTED RESPONSE');
-    })
+    });
 
     ws.on('open', async () => {
       try {
@@ -32,14 +32,20 @@ async function initSub(name) {
         }
         log.info(data);
         ws.send(JSON.stringify(data));
+        function ping(){
+          if(!errorState){
+            ws.ping();
+            setTimeout(ping, 10000);
+          }
+        };
+        ping();
+
       }
       catch (err) {
         log.error(`SUB WS ${name} OPEN error...`);
         log.error(err);
       }
     });
-
-
 
     ws.on('error', async (err) => {
       log.error(`SUB WS ${subscriber.name} error. Connecting in 5 secs...`)
@@ -48,12 +54,14 @@ async function initSub(name) {
         setTimeout(async () => { await initSub(subscriber.name); }, 5000);
       errorState = true;
     });
+
     ws.on('close', async () => {
       log.info(`SUB WS ${subscriber.name} closed! Connecting in 5 secs...`);
       if (!errorState)
         setTimeout(async () => { await initSub(subscriber.name); }, 5000)
       errorState = true;
     });
+
     ws.on('message', (message) => {
       try {
         let m = JSON.parse(message);
@@ -69,8 +77,6 @@ async function initSub(name) {
         log.error(err);
       }
     });
-
-
 
   }
   catch (err) {
