@@ -23,8 +23,18 @@ export function filesRouter(){
   return route.get('/:folder/:hash',  function* (folder, hash){
     const pub = publishers[folder];
     const [file] = yield pub.getRecordByHash(hash);
-    const fullPath = path.join(pub.path, file.path);
-    this.body = fs.createReadStream(fullPath);
+
+    if(fs.existsSync(file)){
+      const fullPath = path.join(pub.path, file.path);
+      this.body = fs.createReadStream(fullPath);
+    }
+    else{
+      pub.markAsDeleted(file._id);
+    }
+
+
+
+
   })
 }
 

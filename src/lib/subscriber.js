@@ -67,7 +67,7 @@ export class Subscriber {
                             response.pipe(file);
                             response.on('error', (err) => {
                                 this._log.error(`response emitter error: ${err}`);
-                                this._updates.unshift(up);
+                                this._updates.push(up);
                                 this._working = false;
                             })
                             response.on('end', async (err) => {
@@ -99,6 +99,9 @@ export class Subscriber {
                         this._working = false;
                     });
                 }
+            }
+            else if(up.op = 'del'){
+                this._updates = this._updates.filter(m => m.hash != up.hash);
             }
         }
     }

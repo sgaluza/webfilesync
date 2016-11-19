@@ -11,6 +11,16 @@ export default class Datastore extends DatastoreNedb {
         })
     }
 
+    qUpdate(filter, update, options) {
+        return new Promise((res, rej) => {
+            this.update(filter, update, options, (err, newDoc) => {
+                if (err)
+                    return rej(err);
+                res();
+            })
+        })
+    }
+
     qFind(doc) {
         return new Promise((res, rej) => {
             this.find(doc, (err, cursor) => {

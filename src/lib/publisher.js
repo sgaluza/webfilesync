@@ -91,8 +91,16 @@ export default class Publisher {
         }
     }
 
+    async fileDeleted(hash){
+        var doc = { _id: this._revision++, op: 'del', date: new Date(), hash: hash };
+        await this._db.qInsert(doc);
+        await this._db.qUpdate({hash: hash}, {deleted: 1}, {multiple: true});
+        doc.folder = this._name;
+        await this.publish(doc);
+    }
+
     async getDelta(startRevision) {
-        const data = await this._db.qExec(this._db.find({ _id: { $gt: startRevision } }).sort({ _id: 1 }));
+        const data = await this._db.qExec(this._db.find({ _id: { $gt: startRevision }, deleted: {$ne: 1} }).sort({ _id: 1 }));
         for(const d of data){
             d.folder = this._name;
         }
