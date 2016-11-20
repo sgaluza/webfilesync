@@ -23,9 +23,8 @@ export function filesRouter(){
   return route.get('/:folder/:hash',  function* (folder, hash){
     const pub = publishers[folder];
     const [file] = yield pub.getRecordByHash(hash);
-
-    if(fs.existsSync(file.path)){
-      const fullPath = path.join(pub.path, file.path);
+    const fullPath = path.join(pub.path, file.path);
+    if(fs.existsSync(fullPath)){
       this.body = fs.createReadStream(fullPath);
     }
     else{
