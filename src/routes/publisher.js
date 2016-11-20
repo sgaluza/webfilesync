@@ -29,7 +29,7 @@ export function filesRouter(){
       this.body = fs.createReadStream(fullPath);
     }
     else{
-      pub.fileDeleted(file.hash);
+      yield pub.fileDeleted(file.hash);
     }
   })
 }
