@@ -92,7 +92,7 @@ export default class Publisher {
     }
 
     async fileDeleted(hash){
-        var doc = { _id: this._revision++, op: 'del', date: new Date(), hash: hash };
+        var doc = { _id: ++this._revision, op: 'del', date: new Date(), hash: hash };
         await this._db.qInsert(doc);
         await this._db.qUpdate({hash: hash}, {deleted: 1}, {multiple: true});
         doc.folder = this._name;
