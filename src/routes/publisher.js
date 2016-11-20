@@ -29,12 +29,8 @@ export function filesRouter(){
       this.body = fs.createReadStream(fullPath);
     }
     else{
-      pub.markAsDeleted(file._id);
+      pub.fileDeleted(file.hash);
     }
-
-
-
-
   })
 }
 
