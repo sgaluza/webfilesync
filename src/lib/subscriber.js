@@ -74,7 +74,7 @@ export class Subscriber {
                                 if (errorOccured && !err) err = errorOccured;
                                 if (err) {
                                     this._log.error(`response error: ${err}`);
-                                    this._updates.unshift(up);
+                                    this._updates.push(up);
                                     this._working = false;
                                     return;
                                 }
