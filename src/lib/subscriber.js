@@ -86,7 +86,7 @@ export class Subscriber {
                         }
                         else{
                             this._log.error(`Can't download file: ${url}. Status Code: ${response.statusCode}`);
-                            this._updates.unshift(up);
+                            this._updates.push(up);
                             this._working = false;
                             setTimeout(() => {
                                 this._checkUpdates();
@@ -95,7 +95,7 @@ export class Subscriber {
                     }).on('error', (err) => {
                         errorOccured = err;
                         this._log.error(`http get error: ${err}`);
-                        this._updates.unshift(up);
+                        this._updates.push(up);
                         this._working = false;
                     });
                 }
