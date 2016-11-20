@@ -108,7 +108,7 @@ export default class Publisher {
     }
 
     async getRecordByHash(hash) {
-        return await this._db.qExec(this._db.find({ hash: hash }).sort({ rev: -1 }).limit(1));
+        return await this._db.qExec(this._db.find({ hash: hash, op: 'add' }).sort({ rev: -1 }).limit(1));
     }
 
     async dropDb() {
