@@ -29,9 +29,9 @@ export function filesRouter(){
         this.body = fs.createReadStream(fullPath);
         return;
       }
+      else
+        yield pub.fileDeleted(hash);
     }
-
-    yield pub.fileDeleted(hash);
   })
 }
 
