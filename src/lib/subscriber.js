@@ -101,7 +101,7 @@ export class Subscriber {
                 }
             }
             else if(up.op = 'del'){
-                this._updates = this._updates.filter(m => m.hash != up.hash);
+                this._updates = this._updates.filter((m) => {return m.hash != up.hash});
                 this._working = false;
             }
         }
