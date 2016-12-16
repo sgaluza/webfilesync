@@ -9,8 +9,9 @@ var subscribers = config.has('subscribe') ? config.get('subscribe') : null;
 var publishers = config.has('publish') ? config.get('publish') : null;
 
 var appenders = [
-    { type: 'dateFile', filename: 'logs/logger.log',  category: 'ROOT' },
-    { type: 'dateFile', filename: 'logs/logger.log',  category: 'PUBS-ROUTER' }
+    { type: 'dateFile', filename: 'logs/logger-all.log'},
+    { type: 'dateFile', filename: 'logs/root-logger.log',  category: 'ROOT' },
+    { type: 'dateFile', filename: 'logs/pubs-logger.log',  category: 'PUBS-ROUTER' }
 ];
 
 if (subscribers) {
