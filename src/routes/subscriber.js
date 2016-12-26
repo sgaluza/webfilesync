@@ -47,18 +47,18 @@ async function initSub(name) {
       }
     });
 
-    ws.on('error', async (err) => {
+    ws.on('error', (err) => {
       log.error(`SUB WS ${subscriber.name} error. Connecting in 5 secs...`)
       log.error(err);
       if (!errorState)
-        setTimeout(async () => { await initSub(subscriber.name); }, 5000);
+        setTimeout(() => { initSub(subscriber.name); }, 5000);
       errorState = true;
     });
 
-    ws.on('close', async () => {
+    ws.on('close', () => {
       log.info(`SUB WS ${subscriber.name} closed! Connecting in 5 secs...`);
       if (!errorState)
-        setTimeout(async () => { await initSub(subscriber.name); }, 5000)
+        setTimeout(() => { initSub(subscriber.name); }, 5000)
       errorState = true;
     });
 
@@ -86,10 +86,10 @@ async function initSub(name) {
 
 }
 
-export default async () => {
+export default () => {
   if (confSub) {
     for (const name of Object.keys(confSub)) {
-      await initSub(name);
+      initSub(name);
     }
   }
 }
