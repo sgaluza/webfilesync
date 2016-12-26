@@ -24,7 +24,7 @@ app.listen(config.get('port'), async () => {
         process.exit();
     }
     try {
-        await subscribe();
+        subscribe();
     }
     catch (err) {
         log.error('SUBSCRIBERS ERROR: ');
