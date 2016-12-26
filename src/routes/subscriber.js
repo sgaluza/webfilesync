@@ -34,6 +34,7 @@ async function initSub(name) {
       function ping() {
         if (!errorState) {
           ws.ping();
+          log.info('ping');
           setTimeout(ping, 10000);
         }
       };
@@ -45,6 +46,8 @@ async function initSub(name) {
       log.error(err);
     }
   });
+
+  ws.on('pong', () => { log.info('pong'); })
 
   ws.on('error', (err) => {
     log.error(`SUB WS ${subscriber.name} error. Connecting in 5 secs...`)
@@ -60,12 +63,6 @@ async function initSub(name) {
       setTimeout(() => { initSub(subscriber.name); }, 5000)
     errorState = true;
   });
-
-  const ping = () => {
-    ws.ping();
-    setTimeout(ping, 10000);
-  }
-  ping();
 
   ws.on('message', (message) => {
     let m = JSON.parse(message);
