@@ -29,7 +29,7 @@ if (publishers) {
     for (const key of Object.keys(publishers)) {
         appenders.push({
             type: 'dateFile',
-            filename: `logs/sub-${key}.log`,
+            filename: `logs/pub-${key}.log`,
             "maxLogSize": 20480000,
             'backups': 20,
             category: `pub-${key}`

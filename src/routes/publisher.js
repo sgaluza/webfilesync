@@ -40,6 +40,11 @@ export function wsRouter() {
     .all('/', async function (next) {
 
       try {
+        this.websocket.on('error', (err) => {
+          log.error('ERROR IN WS ROUTER:');
+          log.error(err);
+        });
+
         this.websocket.on('message', async (message) => {
           log.info(`message: ${message}`);
           message = JSON.parse(message);

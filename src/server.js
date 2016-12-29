@@ -11,6 +11,7 @@ const log = getLogger('ROOT');
 const app = websokify(new Koa());
 
 app.ws.use(wsRouter());
+
 app.use(convert(filesRouter()));
 
 app.listen(config.get('port'), async () => {
@@ -23,14 +24,7 @@ app.listen(config.get('port'), async () => {
         log.error(err);
         process.exit();
     }
-    try {
-        subscribe();
-    }
-    catch (err) {
-        log.error('SUBSCRIBERS ERROR: ');
-        log.error(err);
-        process.exit();
-    }
+    subscribe();
 });
 
 app.on('error', (err) => {
